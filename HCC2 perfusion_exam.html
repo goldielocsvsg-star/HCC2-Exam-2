@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HCC2 Perfusion Module — Mock Exam II</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;600;700;800&family=Fira+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #040812;
+    --bg2: #080f1e;
+    --bg3: #0d1a30;
+    --card: #0c1526;
+    --card2: #111d34;
+    --glow-red: #ff2d55;
+    --glow-cyan: #00e5ff;
+    --glow-green: #39ff6e;
+    --glow-amber: #ffb700;
+    --glow-purple: #a855f7;
+    --text: #cdd8f0;
+    --text-dim: #6b7fa0;
+    --border: rgba(0,229,255,0.12);
+    --border-hot: rgba(255,45,85,0.3);
+    --correct: #39ff6e;
+    --incorrect: #ff2d55;
+    --indicated: #39ff6e;
+    --contraindicated: #ff2d55;
+    --nonessential: #ffb700;
+    --effective: #39ff6e;
+    --ineffective: #ff2d55;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Fira Sans', sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+  }
+
+  /* === HEADER === */
+  .header {
+    position: relative;
+    background: linear-gradient(180deg, #04091a 0%, var(--bg2) 100%);
+    border-bottom: 1px solid var(--border-hot);
+    padding: 0 24px;
+    overflow: hidden;
+  }
+
+  .header-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 28px 0 0;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: 'Oxanium', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--glow-red);
+    border: 1px solid var(--glow-red);
+    padding: 3px 10px;
+    border-radius: 2px;
+    margin-bottom: 12px;
+    background: rgba(255,45,85,0.08);
+    animation: badgePulse 3s ease-in-out infinite;
+  }
+
+  @keyframes badgePulse {
+    0%, 100% { box-shadow: 0 0 6px rgba(255,45,85,0.3); }
+    50% { box-shadow: 0 0 14px rgba(255,45,85,0.7); }
+  }
+
+  .header h1 {
+    font-family: 'Oxanium', sans-serif;
+    font-size: clamp(22px, 4vw, 34px);
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.15;
+    letter-spacing: 0.5px;
+  }
+
+  .header h1 span { color: var(--glow-cyan); }
+
+  .header-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    letter-spacing: 1px;
+    font-family: 'Oxanium', sans-serif;
+    text-transform: uppercase;
+  }
+
+  /* EKG animation */
+  .ekg-wrap {
+    position: relative;
+    height: 52px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+
+  .ekg-line {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 200%;
+    transform: translateY(-50%);
+    animation: ekgScroll 4s linear infinite;
+  }
+
+  @keyframes ekgScroll {
+    0% { transform: translateX(0) translateY(-50%); }
+    100% { transform: translateX(-50%) translateY(-50%); }
+  }
+
+  /* === STATS BAR === */
+  .stats-bar {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 10px 24px;
+  }
+
+  .stats-inner {
+    max-width: 860px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .stat-chip {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .stat-chip span { font-size: 16px; font-weight: 800; }
+
+  .stat-chip.answered span { color: var(--glow-cyan); }
+  .stat-chip.score span { color: var(--glow-green); }
+  .stat-chip.wrong span { color: var(--glow-red); }
+
+  .progress-track {
+    flex: 1;
+    min-width: 120px;
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--glow-cyan), var(--glow-purple));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    width: 0%;
+    box-shadow: 0 0 8px var(--glow-cyan);
+  }
+
+  .q-jump {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 11px;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: transparent;
+    transition: all 0.2s;
+  }
+  .q-jump:hover { border-color: var(--glow-cyan); color: var(--glow-cyan); }
+
+  /* === MAIN LAYOUT === */
+  .main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+
+  /* === SECTION DIVIDERS === */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 40px 0 20px;
+  }
+
+  .section-header:first-child { margin-top: 0; }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border-hot), transparent);
+  }
+
+  .section-tag {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--glow-red);
+    white-space: nowrap;
+  }
+
+  /* Case context box */
+  .case-context {
+    background: linear-gradient(135deg, rgba(0,229,255,0.04) 0%, rgba(168,85,247,0.04) 100%);
+    border: 1px solid rgba(0,229,255,0.15);
+    border-left: 3px solid var(--glow-cyan);
+    border-radius: 4px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .case-context strong {
+    display: block;
+    font-family: 'Oxanium', sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--glow-cyan);
+    margin-bottom: 8px;
+  }
+
+  /* === QUESTION CARD === */
+  .q-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .q-card.answered { border-color: rgba(0,229,255,0.2); }
+
+  .q-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 18px 14px;
+  }
+
+  .q-number {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--glow-red);
+    letter-spacing: 1px;
+    white-space: nowrap;
+    padding-top: 1px;
+    min-width: 28px;
+  }
+
+  .q-type-badge {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 2px;
+    white-space: nowrap;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+
+  .q-type-badge.mc { color: var(--glow-cyan); background: rgba(0,229,255,0.1); border: 1px solid rgba(0,229,255,0.25); }
+  .q-type-badge.sata { color: var(--glow-purple); background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3); }
+  .q-type-badge.matrix { color: var(--glow-amber); background: rgba(255,183,0,0.08); border: 1px solid rgba(255,183,0,0.25); }
+  .q-type-badge.bowtie { color: var(--glow-red); background: rgba(255,45,85,0.08); border: 1px solid rgba(255,45,85,0.25); }
+  .q-type-badge.priority { color: #f97316; background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.25); }
+
+  .q-stem { flex: 1; font-size: 14.5px; line-height: 1.6; color: var(--text); }
+
+  .q-body { padding: 0 18px 16px; }
+
+  /* === MC OPTIONS === */
+  .mc-options { display: flex; flex-direction: column; gap: 7px; }
+
+  .mc-opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 11px 14px;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.18s;
+    background: rgba(255,255,255,0.02);
+    user-select: none;
+  }
+
+  .mc-opt:hover:not(.disabled) {
+    border-color: var(--glow-cyan);
+    background: rgba(0,229,255,0.05);
+  }
+
+  .mc-opt.selected:not(.revealed) {
+    border-color: var(--glow-cyan);
+    background: rgba(0,229,255,0.08);
+  }
+
+  .mc-opt.correct.revealed {
+    border-color: var(--correct);
+    background: rgba(57,255,110,0.08);
+  }
+
+  .mc-opt.wrong.revealed {
+    border-color: var(--incorrect);
+    background: rgba(255,45,85,0.08);
+  }
+
+  .mc-opt.disabled { cursor: default; }
+
+  .opt-letter {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    min-width: 18px;
+    padding-top: 1px;
+    transition: color 0.18s;
+  }
+
+  .mc-opt.correct.revealed .opt-letter { color: var(--correct); }
+  .mc-opt.wrong.revealed .opt-letter { color: var(--incorrect); }
+  .mc-opt:hover:not(.disabled) .opt-letter { color: var(--glow-cyan); }
+
+  .opt-text { font-size: 14px; line-height: 1.5; }
+
+  .opt-icon {
+    margin-left: auto;
+    font-size: 16px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+  }
+
+  .mc-opt.correct.revealed .opt-icon, .mc-opt.wrong.revealed .opt-icon { opacity: 1; }
+
+  /* === SATA === */
+  .sata-hint {
+    font-size: 11px;
+    color: var(--glow-purple);
+    font-family: 'Oxanium', sans-serif;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .sata-opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 11px 14px;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.18s;
+    background: rgba(255,255,255,0.02);
+    margin-bottom: 7px;
+    user-select: none;
+  }
+
+  .sata-opt:hover:not(.disabled) { border-color: var(--glow-purple); background: rgba(168,85,247,0.06); }
+  .sata-opt.selected:not(.revealed) { border-color: var(--glow-purple); background: rgba(168,85,247,0.1); }
+  .sata-opt.correct-sel.revealed { border-color: var(--correct); background: rgba(57,255,110,0.08); }
+  .sata-opt.missed.revealed { border-color: var(--glow-amber); background: rgba(255,183,0,0.06); }
+  .sata-opt.wrong-sel.revealed { border-color: var(--incorrect); background: rgba(255,45,85,0.08); }
+  .sata-opt.disabled { cursor: default; }
+
+  .sata-checkbox {
+    width: 16px; height: 16px;
+    border: 2px solid var(--text-dim);
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    transition: all 0.18s;
+  }
+
+  .sata-opt.selected .sata-checkbox { background: var(--glow-purple); border-color: var(--glow-purple); }
+  .sata-opt.correct-sel.revealed .sata-checkbox { background: var(--correct); border-color: var(--correct); }
+  .sata-opt.wrong-sel.revealed .sata-checkbox { background: var(--incorrect); border-color: var(--incorrect); }
+  .sata-opt.missed.revealed .sata-checkbox { border-color: var(--glow-amber); }
+
+  /* === MATRIX === */
+  .matrix-table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+
+  .matrix-table th {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 9px 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .matrix-table th.col-indicated { color: var(--indicated); }
+  .matrix-table th.col-contraindicated { color: var(--contraindicated); }
+  .matrix-table th.col-nonessential { color: var(--nonessential); }
+  .matrix-table th.col-effective { color: var(--effective); }
+  .matrix-table th.col-ineffective { color: var(--ineffective); }
+  .matrix-table th.col-action { text-align: left; color: var(--text-dim); }
+
+  .matrix-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+  }
+
+  .matrix-table tr:last-child td { border-bottom: none; }
+
+  .matrix-table .action-cell { font-size: 13.5px; line-height: 1.45; }
+
+  .matrix-radio {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .radio-dot {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.15);
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+  }
+
+  .radio-dot:hover:not(.disabled) { border-color: var(--glow-amber); }
+  .radio-dot.selected-ind { border-color: var(--indicated); background: rgba(57,255,110,0.15); color: var(--indicated); }
+  .radio-dot.selected-con { border-color: var(--contraindicated); background: rgba(255,45,85,0.15); color: var(--contraindicated); }
+  .radio-dot.selected-non { border-color: var(--nonessential); background: rgba(255,183,0,0.12); color: var(--nonessential); }
+  .radio-dot.selected-eff { border-color: var(--effective); background: rgba(57,255,110,0.15); color: var(--effective); }
+  .radio-dot.selected-ine { border-color: var(--ineffective); background: rgba(255,45,85,0.15); color: var(--ineffective); }
+
+  .radio-dot.correct-reveal { border-color: var(--correct) !important; background: rgba(57,255,110,0.2) !important; }
+  .radio-dot.wrong-reveal { border-color: var(--incorrect) !important; background: rgba(255,45,85,0.2) !important; }
+  .radio-dot.disabled { cursor: default; }
+
+  /* === BOW-TIE === */
+  .bowtie-wrap {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    grid-template-rows: 1fr auto;
+    gap: 10px;
+    align-items: start;
+  }
+
+  .bowtie-panel {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px;
+  }
+
+  .bowtie-panel h4 {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .bowtie-panel.left h4 { color: var(--glow-purple); }
+  .bowtie-panel.right h4 { color: var(--glow-cyan); }
+  .bowtie-panel.monitor h4 { color: var(--glow-amber); }
+
+  .bowtie-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 6px;
+  }
+
+  .bowtie-arrow {
+    font-size: 18px;
+    color: var(--text-dim);
+    opacity: 0.4;
+  }
+
+  .bowtie-condition {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--glow-red);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
+    border: 1px solid var(--glow-red);
+    padding: 10px 6px;
+    background: rgba(255,45,85,0.06);
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(255,45,85,0.2);
+  }
+
+  .bowtie-panel.bottom {
+    grid-column: 1 / -1;
+  }
+
+  .bowtie-opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 9px 10px;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.18s;
+    margin-bottom: 6px;
+    font-size: 13px;
+    user-select: none;
+    background: rgba(0,0,0,0.2);
+  }
+
+  .bowtie-opt:last-child { margin-bottom: 0; }
+  .bowtie-opt:hover:not(.disabled) { border-color: var(--glow-cyan); background: rgba(0,229,255,0.05); }
+  .bowtie-opt.selected:not(.revealed) { border-color: var(--glow-cyan); background: rgba(0,229,255,0.08); }
+  .bowtie-opt.correct-reveal { border-color: var(--correct) !important; background: rgba(57,255,110,0.08) !important; }
+  .bowtie-opt.wrong-reveal { border-color: var(--incorrect) !important; background: rgba(255,45,85,0.08) !important; }
+  .bowtie-opt.disabled { cursor: default; }
+
+  .bt-check {
+    width: 15px; height: 15px;
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+  }
+
+  .bowtie-opt.selected .bt-check { background: var(--glow-cyan); border-color: var(--glow-cyan); }
+  .bowtie-opt.correct-reveal .bt-check { background: var(--correct); border-color: var(--correct); }
+  .bowtie-opt.wrong-reveal .bt-check { background: var(--incorrect); border-color: var(--incorrect); }
+
+  .bt-select-count {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    font-family: 'Oxanium', sans-serif;
+    letter-spacing: 1px;
+  }
+
+  /* === SUBMIT BUTTON === */
+  .submit-btn {
+    margin-top: 14px;
+    padding: 10px 22px;
+    background: transparent;
+    border: 1px solid var(--glow-cyan);
+    color: var(--glow-cyan);
+    font-family: 'Oxanium', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s;
+  }
+
+  .submit-btn:hover { background: rgba(0,229,255,0.1); box-shadow: 0 0 14px rgba(0,229,255,0.2); }
+  .submit-btn:disabled { opacity: 0.3; cursor: default; }
+
+  /* === RATIONALE === */
+  .rationale {
+    display: none;
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-left: 3px solid var(--glow-amber);
+    border-radius: 4px;
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: #b8c8e8;
+    animation: fadeSlide 0.35s ease;
+  }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .rationale.visible { display: block; }
+
+  .rationale strong {
+    display: block;
+    font-family: 'Oxanium', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--glow-amber);
+    text-transform: uppercase;
+    margin-bottom: 7px;
+  }
+
+  .result-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Oxanium', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 2px;
+    margin-bottom: 10px;
+  }
+
+  .result-tag.correct { background: rgba(57,255,110,0.12); color: var(--correct); border: 1px solid rgba(57,255,110,0.3); }
+  .result-tag.incorrect { background: rgba(255,45,85,0.12); color: var(--incorrect); border: 1px solid rgba(255,45,85,0.3); }
+  .result-tag.partial { background: rgba(255,183,0,0.1); color: var(--glow-amber); border: 1px solid rgba(255,183,0,0.3); }
+
+  /* === FINAL SCORE === */
+  #final-score {
+    display: none;
+    margin: 40px 0 0;
+    background: linear-gradient(135deg, rgba(0,229,255,0.05) 0%, rgba(168,85,247,0.05) 100%);
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 8px;
+    padding: 32px;
+    text-align: center;
+    animation: fadeSlide 0.5s ease;
+  }
+
+  #final-score h2 {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+
+  #final-score .score-big {
+    font-family: 'Oxanium', sans-serif;
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1;
+    margin: 14px 0;
+  }
+
+  #final-score .score-label {
+    font-size: 13px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-family: 'Oxanium', sans-serif;
+    margin-bottom: 20px;
+  }
+
+  .reset-btn {
+    padding: 12px 28px;
+    background: transparent;
+    border: 1px solid var(--glow-red);
+    color: var(--glow-red);
+    font-family: 'Oxanium', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s;
+    margin-top: 10px;
+  }
+
+  .reset-btn:hover { background: rgba(255,45,85,0.1); box-shadow: 0 0 16px rgba(255,45,85,0.25); }
+
+  /* ===mobile=== */
+  @media (max-width: 600px) {
+    .bowtie-wrap { grid-template-columns: 1fr; }
+    .bowtie-center { flex-direction: row; }
+    .bowtie-condition { writing-mode: horizontal-tb; transform: none; padding: 6px 12px; }
+    .bowtie-arrow { transform: rotate(90deg); }
+    .bowtie-panel.bottom { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="badge">&#9829; HCC2 &bull; Perfusion Module II</div>
+    <h1>Cardiac <span>Mock Exam</span></h1>
+    <div class="header-sub">60 Application-Level NCLEX Questions &bull; ACS · HF · Cardiogenic Shock · PCI · Medications</div>
+    <div class="ekg-wrap">
+      <svg class="ekg-line" viewBox="0 0 800 50" fill="none" xmlns="http://www.w3.org/2000/svg" height="50">
+        <polyline points="0,25 60,25 70,25 75,5 80,45 85,10 90,25 100,25 160,25 165,25 170,5 175,45 180,10 185,25 200,25 260,25 265,25 270,5 275,45 280,10 285,25 300,25 360,25 365,25 370,5 375,45 380,10 385,25 400,25 460,25 465,25 470,5 475,45 480,10 485,25 500,25 560,25 565,25 570,5 575,45 580,10 585,25 600,25 660,25 665,25 670,5 675,45 680,10 685,25 700,25 760,25 765,25 770,5 775,45 780,10 785,25 800,25"
+          stroke="rgba(255,45,85,0.5)" stroke-width="1.5" fill="none"/>
+        <polyline points="0,25 60,25 70,25 75,5 80,45 85,10 90,25 100,25 160,25 165,25 170,5 175,45 180,10 185,25 200,25 260,25 265,25 270,5 275,45 280,10 285,25 300,25 360,25 365,25 370,5 375,45 380,10 385,25 400,25 460,25 465,25 470,5 475,45 480,10 485,25 500,25 560,25 565,25 570,5 575,45 580,10 585,25 600,25 660,25 665,25 670,5 675,45 680,10 685,25 700,25 760,25 765,25 770,5 775,45 780,10 785,25 800,25"
+          stroke="rgba(255,45,85,0.15)" stroke-width="4" fill="none" filter="blur(3px)"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-chip answered">Answered: <span id="stat-answered">0</span>/60</div>
+    <div class="stat-chip score">Correct: <span id="stat-correct">0</span></div>
+    <div class="stat-chip wrong">Incorrect: <span id="stat-wrong">0</span></div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <button class="q-jump" onclick="document.getElementById('final-score').scrollIntoView({behavior:'smooth'})">See Score ↓</button>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main" id="exam-root"></div>
+
+<!-- FINAL SCORE -->
+<div class="main">
+  <div id="final-score">
+    <h2>EXAM COMPLETE</h2>
+    <div class="score-big" id="final-pct" style="color: var(--glow-cyan)">—%</div>
+    <div class="score-label" id="final-detail">— / 60 questions correct</div>
+    <div id="final-feedback" style="font-size:14px; color: var(--text-dim); margin-bottom: 16px;"></div>
+    <button class="reset-btn" onclick="resetExam()">&#8635; Reset Exam</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// QUESTION DATA
+// ============================================================
+const QUESTIONS = [
+
+// ============================
+// CASE STUDY 1: ACS / STEMI (Q1–6)
+// ============================
+{
+  id: 1, section: "CASE STUDY 1: Acute Coronary Syndrome (STEMI)",
+  context: `<strong>Patient Context:</strong> Mr. Ramirez, 58-year-old male, presents to the ED with 8/10 crushing substernal chest pain radiating to left jaw, diaphoresis, and nausea for 90 minutes unrelieved. PMH: hypertension, 20 pack-year smoking history, hypercholesterolemia, BMI 32. <br><br>Vital Signs: BP 158/96 mmHg | HR 118 bpm (regular) | RR 22 | O2 sat 91% RA | Temp 98.8°F | Pain 8/10<br>EKG: ST elevation noted in leads II, III, aVF | Troponin: 1.8 ng/dL | BNP: 95 pg/mL`,
+  type: "mc",
+  stem: "Which assessment finding requires the MOST immediate intervention by the nurse?",
+  options: ["BP 158/96 mmHg", "O2 saturation of 91% on room air", "Heart rate of 118 bpm", "Temperature of 98.8°F"],
+  correct: 1,
+  rationale: "O2 saturation of 91% indicates hypoxemia. Per ACS guidelines, supplemental oxygen should be administered to maintain SpO2 ≥90%. Myocardial cells already deprived of oxygen (due to coronary occlusion) face worsening ischemia without adequate oxygenation. While elevated BP, tachycardia, and the EKG findings are all serious, hypoxemia represents an immediately correctable threat to myocardial viability that the nurse can address without a provider order."
+},
+{
+  id: 2, type: "mc",
+  stem: "Based on the client's history and assessment findings, the nurse suspects the client is experiencing a STEMI because of ST elevation in leads II, III, and aVF. The nurse's INITIAL priority action should be to:",
+  options: ["Administer metoprolol 5 mg IV push immediately", "Prepare the client for emergent PCI targeting door-to-balloon time within 90 minutes", "Initiate thrombolytic therapy (alteplase) immediately since this is STEMI", "Obtain a stat chest X-ray to rule out dissection"],
+  correct: 1,
+  rationale: "STEMI indicates full-thickness myocardial infarction requiring emergent PCI within 90 minutes (AMI Core Measure standard — commit this to memory!). PCI is the preferred treatment when available. Thrombolytics are reserved only for cases where PCI is unavailable AND the client cannot be transferred to a cath lab within 90 minutes. Metoprolol should be held until hemodynamic status is confirmed (patient is tachycardic — beta blocker administration depends on hemodynamic stability). CXR can follow initial stabilization."
+},
+{
+  id: 3, type: "matrix_icne",
+  stem: "It is now 30 minutes later. The provider has evaluated Mr. Ramirez and the nurse is preparing to implement the plan of care. Choose whether each nursing action is Indicated (appropriate), Contraindicated (could be harmful), or Non-essential (not needed at this time):",
+  rows: [
+    { action: "Administer aspirin 325 mg PO — instruct client to chew, not swallow whole", correct: "I" },
+    { action: "Apply supplemental oxygen since client is 'in distress' even though SpO2 is now 96% on room air", correct: "C" },
+    { action: "Establish two large-bore peripheral IV lines", correct: "I" },
+    { action: "Administer alteplase (thrombolytics) since this is STEMI and PCI team is available within 90 min", correct: "C" },
+    { action: "Initiate continuous cardiac telemetry monitoring", correct: "I" },
+    { action: "Administer scheduled hydrochlorothiazide 25 mg PO for hypertension", correct: "N" },
+    { action: "Prepare client for emergent cardiac catheterization/PCI", correct: "I" },
+    { action: "Administer clopidogrel (Plavix) 600 mg PO per order", correct: "I" }
+  ],
+  rationale: "INDICATED: Chewed aspirin (325 mg), dual large-bore IV access, continuous telemetry, PCI preparation, and clopidogrel (dual antiplatelet therapy for ACS) are all standard ACS interventions. CONTRAINDICATED: Oxygen without hypoxemia (SpO2 >90%) increases coronary vascular resistance and has been shown to increase mortality. Thrombolytics when PCI is available within 90 min — PCI is superior and thrombolytics carry significant bleeding risk. NON-ESSENTIAL: Routine antihypertensive administration should wait until hemodynamic status is fully assessed and provider confirms; it is not an emergency priority at this moment."
+},
+{
+  id: 4, type: "matrix_ei",
+  stem: "It is now 2 hours later. Mr. Ramirez has undergone PCI with stent placement and returned to the cardiac unit. The nurse has just reassessed the client. For each reassessment finding, indicate whether the interventions were Effective or Ineffective:",
+  rows: [
+    { action: "Pain decreased from 8/10 to 1/10", correct: "E" },
+    { action: "O2 saturation improved to 97% on 2L nasal cannula", correct: "E" },
+    { action: "Blood pressure increased to 190/112 mmHg", correct: "I" },
+    { action: "Heart rate decreased to 82 bpm (regular)", correct: "E" },
+    { action: "Client reports new onset of diaphoresis with chest tightness 3/10", correct: "I" },
+    { action: "Client states, 'I feel calmer and less scared than before'", correct: "E" }
+  ],
+  rationale: "EFFECTIVE indicators: Pain resolution confirms adequate perfusion to myocardium; improved SpO2 shows oxygen therapy success; normalized HR indicates reduced sympathetic stimulation; decreased anxiety shows comfort measures working. INEFFECTIVE: Hypertension (190/112) indicates BP is not controlled — increased afterload strains the post-MI heart. New onset chest tightness and diaphoresis post-PCI is a critical warning sign of possible stent thrombosis or reinfarction and requires immediate provider notification and reassessment."
+},
+{
+  id: 5, type: "sata",
+  stem: "Which factors does the nurse identify as potentially contributing to Mr. Ramirez's hospitalization? Select all that apply.",
+  options: ["20 pack-year smoking history", "Age 58, male sex", "Total cholesterol 245 mg/dL (hypercholesterolemia)", "History of hypertension (BP 158/96 on presentation)", "Vegetarian diet low in saturated fat", "Daily 5-mile jogging routine", "BMI of 32 (obesity)"],
+  correct: [0, 1, 2, 3, 6],
+  rationale: "CONTRIBUTING FACTORS: Smoking (major modifiable risk — causes endothelial damage, promotes atherosclerosis), age and male sex (non-modifiable risk, increases significantly >45 in males), hypercholesterolemia (LDL deposits form atherosclerotic plaques), hypertension (damages endothelium, accelerates atherosclerosis), and obesity (BMI ≥30 associated with metabolic syndrome, HTN, and dyslipidemia). NOT contributing: vegetarian diet and regular aerobic exercise are cardioprotective — these would be risk-reducing factors."
+},
+{
+  id: 6, type: "matrix_ei",
+  stem: "Mr. Ramirez is being discharged. For each client response below, indicate whether the nurse's discharge teaching was Effective or Ineffective:",
+  rows: [
+    { action: "\"I will take my clopidogrel (Plavix) every day and won't stop it without calling my doctor first.\"", correct: "E" },
+    { action: "\"If I get chest pain at home, I'll take my nitroglycerin and wait 30 minutes to see if it helps before calling 911.\"", correct: "I" },
+    { action: "\"I should take my atorvastatin (Lipitor) in the evening because that's when cholesterol is made.\"", correct: "E" },
+    { action: "\"I can stop my beta blocker if I feel dizzy or lightheaded from it.\"", correct: "I" },
+    { action: "\"I should follow a heart-healthy diet such as the Mediterranean or DASH diet.\"", correct: "E" },
+    { action: "\"Getting a headache after taking nitroglycerin means I'm allergic to it and should stop using it.\"", correct: "I" }
+  ],
+  rationale: "EFFECTIVE: Never stopping antiplatelet agents abruptly (especially post-stent — life-threatening thrombosis risk). Taking statins in the evening (cholesterol synthesized at night — peak effectiveness). Heart-healthy diet is a primary prevention strategy. INEFFECTIVE: 911 should be called after ONE nitroglycerin tablet with no relief — not 30 minutes! Beta blockers must NEVER be stopped abruptly (rebound tachycardia, risk of MI). Headache from nitroglycerin is a common side effect from vasodilation — NOT an allergic reaction; it does not require stopping the medication."
+},
+
+// ============================
+// CASE STUDY 2: Heart Failure (Q7–12)
+// ============================
+{
+  id: 7, section: "CASE STUDY 2: Decompensated Heart Failure",
+  context: `<strong>Patient Context:</strong> Ms. Thompson, 74-year-old female, admitted with 3-day worsening dyspnea, +3 bilateral pitting edema, orthopnea (requires 4 pillows), and 8 lb weight gain in 5 days. PMH: chronic HF (EF 30%), HTN, atrial fibrillation. Meds: furosemide 40 mg PO daily, lisinopril 10 mg PO, digoxin 0.25 mg PO, metoprolol succinate 50 mg PO.<br><br>VS: BP 162/98 | HR 102 irregular | RR 28 | O2 sat 88% RA | Crackles bilateral lung bases | BNP: 1,250 pg/mL | Digoxin level: 2.4 ng/mL (therapeutic range: 0.5–2.0 ng/mL) | K+ 3.1 mEq/L`,
+  type: "mc",
+  stem: "Which finding requires the MOST immediate intervention by the nurse?",
+  options: ["BNP of 1,250 pg/mL indicating decompensated HF", "+3 bilateral pitting edema with 8 lb weight gain", "Digoxin level of 2.4 ng/mL with an irregular heart rate of 102 bpm", "Respiratory rate of 28 breaths/min with crackles"],
+  correct: 2,
+  rationale: "Digoxin toxicity (level >2.0 ng/mL) with concurrent irregular tachycardia represents an immediately life-threatening pharmacological emergency. Digoxin toxicity can cause potentially fatal dysrhythmias including ventricular fibrillation, and is worsened by the concurrent hypokalemia (K+ 3.1 — furosemide effect). The nurse must HOLD digoxin and notify the provider IMMEDIATELY. While tachypnea, hypoxemia, and elevated BNP all indicate decompensation requiring treatment, they are expected findings in HF exacerbation. Digoxin toxicity with dysrhythmia is the most acutely dangerous finding requiring intervention NOW."
+},
+{
+  id: 8, type: "mc",
+  stem: "The nurse suspects Ms. Thompson is experiencing acute decompensated heart failure with pulmonary congestion. The nurse's INITIAL action should be to:",
+  options: ["Administer IV furosemide 40 mg as ordered to reduce fluid overload", "Elevate the head of the bed to high Fowler's and apply supplemental oxygen", "Draw labs for serum electrolytes to assess for furosemide side effects", "Ask the client about her current medication adherence at home"],
+  correct: 1,
+  rationale: "ABC priority — airway and breathing first. Positioning the client in high Fowler's (HOB 60–90°) immediately reduces venous return and preload, decreasing pulmonary congestion and improving respiratory effort. This is a NURSE-INITIATED intervention (no order required) that directly addresses the life-threatening hypoxemia (O2 sat 88%). Oxygen should then be applied for hypoxemia. IV furosemide is the next priority but requires time to draw up and administer. Labs are important but secondary to stabilizing the airway/breathing. Medication history assessment can occur after emergent interventions."
+},
+{
+  id: 9, type: "matrix_icne",
+  stem: "It is now 1 hour later. The provider has evaluated Ms. Thompson. Indicate whether each nursing action is Indicated, Contraindicated, or Non-essential:",
+  rows: [
+    { action: "Hold digoxin and notify provider of toxic level; do not administer scheduled dose", correct: "I" },
+    { action: "Administer IV furosemide (Lasix) 40 mg as ordered for diuresis", correct: "I" },
+    { action: "Maintain client in high Fowler's position continuously", correct: "I" },
+    { action: "Administer metoprolol IV push for rate control in acutely decompensated state", correct: "C" },
+    { action: "Monitor strict intake and output every hour", correct: "I" },
+    { action: "Obtain daily weight each morning at the same time on the same scale", correct: "I" },
+    { action: "Restrict total fluid intake to 1.5–2 L/day per provider order", correct: "I" },
+    { action: "Infuse 1 L NS bolus to improve renal perfusion and urine output", correct: "C" }
+  ],
+  rationale: "INDICATED: Holding digoxin (toxicity), IV furosemide (diuresis for fluid overload), high Fowler's (reduces preload), strict I&O (monitor diuretic response), daily weights (gold standard for fluid monitoring in HF), and fluid restriction (prevent worsening overload). CONTRAINDICATED: IV metoprolol in ACUTE decompensated HF is contraindicated — beta blockers can worsen acute decompensation by decreasing cardiac output in an already failing heart (oral beta blockers for stable chronic HF are OK). NS bolus is CONTRAINDICATED — this patient has fluid overload; adding more IV fluid would worsen pulmonary edema and strain the failing heart."
+},
+{
+  id: 10, type: "matrix_ei",
+  stem: "It is now 4 hours after initiating treatment. Indicate whether each reassessment finding demonstrates Effective or Ineffective response to treatment:",
+  rows: [
+    { action: "O2 saturation improved from 88% to 95% on 2L nasal cannula", correct: "E" },
+    { action: "Urine output 80–100 mL/hr since IV furosemide was given", correct: "E" },
+    { action: "Client reports worsening shortness of breath and increased anxiety", correct: "I" },
+    { action: "Crackles now only present at bilateral lower bases (previously throughout)", correct: "E" },
+    { action: "BP dropped to 88/60 mmHg", correct: "I" },
+    { action: "Client is speaking in complete sentences without shortness of breath", correct: "E" }
+  ],
+  rationale: "EFFECTIVE: Improved SpO2 (oxygen and positioning working), robust urine output (furosemide successfully reducing preload and fluid overload), decreased crackles (pulmonary edema resolving), and improved ability to speak without dyspnea. INEFFECTIVE: Worsening dyspnea and anxiety indicate treatment is not improving respiratory status — requires provider reassessment and possible escalation (CPAP, additional medications). Hypotension (BP 88/60) is a concerning adverse effect — may indicate over-diuresis, reduced preload, or worsening cardiac output; notify provider immediately."
+},
+{
+  id: 11, type: "sata",
+  stem: "Which factors does the nurse identify as potentially contributing to Ms. Thompson's hospital admission? Select all that apply.",
+  options: ["Non-adherence to fluid restriction at home", "Failure to perform daily weights at home", "History of hypertension causing increased afterload on failing heart", "Digoxin toxicity worsening cardiac dysrhythmias", "Regular 30-minute daily walking program", "Diet high in sodium causing fluid retention"],
+  correct: [0, 1, 2, 3, 5],
+  rationale: "CONTRIBUTING: Non-adherence to fluid restriction (most common cause of HF rehospitalization), skipping daily weights (loses early warning of fluid accumulation — 2-3 lb/day or 5 lb/week gain = call provider), hypertension (increases afterload against which a failing heart must pump), digoxin toxicity (promotes dysrhythmias), and high-sodium diet (sodium causes fluid retention, worsening preload). NOT CONTRIBUTING: Regular walking is cardioprotective for stable chronic HF — it is a GOAL of HF management, not a contributing factor to decompensation."
+},
+{
+  id: 12, type: "matrix_ei",
+  stem: "Ms. Thompson is preparing for discharge. For each client response, indicate whether the nurse's teaching was Effective or Ineffective:",
+  rows: [
+    { action: "\"I'll weigh myself every morning before breakfast and call my doctor if I gain 2–3 pounds in one day or 5 pounds in a week.\"", correct: "E" },
+    { action: "\"Water is natural and healthy, so I can drink as much as I want throughout the day.\"", correct: "I" },
+    { action: "\"I need to limit my sodium to about 2 grams per day and avoid processed and canned foods.\"", correct: "E" },
+    { action: "\"Once my swelling goes away completely, I can stop taking my furosemide since I won't need it anymore.\"", correct: "I" },
+    { action: "\"If I find myself needing more pillows to breathe at night, I should call my doctor right away.\"", correct: "E" },
+    { action: "\"My lisinopril is causing a dry cough, so I can just stop taking it on my own.\"", correct: "I" }
+  ],
+  rationale: "EFFECTIVE: Daily weights with specific thresholds (2-3 lb/day or 5 lb/week — memorize these!), sodium restriction (2 g/day is standard for HF), and recognizing orthopnea worsening as a decompensation warning sign. INEFFECTIVE: Fluid restriction typically 1.5-2 L/day for HF — unlimited fluid intake will cause fluid overload and rehospitalization. Furosemide is a lifelong medication for HF — stopping it causes rapid fluid reaccumulation. Lisinopril (ACE inhibitor) dry cough is common but the medication should NOT be stopped without provider guidance — the provider may switch to an ARB, not discontinue heart failure therapy."
+},
+
+// ============================
+// INDIVIDUAL QUESTIONS (Q13–60)
+// ============================
+{
+  id: 13, section: "CLINICAL DECISION MAKING — Medications",
+  type: "mc",
+  stem: "The nurse is preparing to administer metoprolol 5 mg IV push to a client with STEMI. Which assessment finding requires the nurse to HOLD this medication and notify the provider?",
+  options: ["Blood pressure 134/84 mmHg", "Heart rate 52 bpm", "SpO2 96% on 2L nasal cannula", "Temperature 100.2°F"],
+  correct: 1,
+  rationale: "Beta blockers are contraindicated when heart rate is <60 bpm (bradycardia). Metoprolol decreases heart rate by blocking beta-1 adrenergic receptors — administering it at HR 52 risks severe bradycardia, heart block, or cardiac arrest. Always assess apical pulse for one full minute before administering. Beta blockers are also contraindicated in cardiogenic shock, decompensated HF, and 2nd/3rd degree heart block. BP 134/84 is acceptable; the contraindication threshold is SBP <90 mmHg."
+},
+{
+  id: 14, type: "sata",
+  stem: "The nurse is providing initial management for a client with STEMI. Which interventions are appropriate? Select all that apply.",
+  options: ["Administer aspirin 325 mg chewed immediately", "Apply supplemental oxygen if SpO2 is below 90%", "Establish two large-bore peripheral IV lines", "Administer sublingual nitroglycerin if SBP is greater than 90 mmHg", "Ambulate the client immediately to prevent DVT formation", "Administer thrombolytics regardless of PCI availability"],
+  correct: [0, 1, 2, 3],
+  rationale: "APPROPRIATE: Aspirin 325 mg chewed (immediate antiplatelet effect — chewing achieves faster absorption than swallowing), oxygen only if SpO2 <90% (not routinely otherwise), two large-bore IVs (for rapid medication/fluid administration), nitroglycerin for chest pain if SBP >90 mmHg. NOT APPROPRIATE: Ambulation is CONTRAINDICATED in acute MI — bed rest is required to reduce oxygen demand on ischemic myocardium. Thrombolytics are only used when PCI is NOT available within 90 minutes — they are never given automatically."
+},
+{
+  id: 15, type: "mc",
+  stem: "A client returns to the unit following cardiac catheterization via the RIGHT femoral artery approach. Which nursing action is the PRIORITY?",
+  options: ["Encourage oral fluids to flush contrast dye through the kidneys", "Elevate the affected leg on two pillows to reduce hematoma formation", "Maintain the affected leg straight and monitor the puncture site for bleeding", "Administer the ordered analgesic for post-procedure discomfort"],
+  correct: 2,
+  rationale: "Post-femoral cardiac catheterization: PRIORITY is hemostasis. The affected leg must remain STRAIGHT (NOT elevated) while the arterial sheath is in place and for 2–6 hours after removal. Elevation is INCORRECT — it disrupts manual compression and hemostatic devices. Monitor the puncture site for bleeding/hematoma formation, and perform frequent neurovascular checks (5 P's: pain, pallor, pulse, paresthesia, paralysis). NEVER remove the dressing without a provider order. Fluid intake and pain management are important but secondary to preventing hemorrhage."
+},
+{
+  id: 16, type: "mc",
+  stem: "A client who sustained a large anterior MI develops cardiogenic shock. Which set of assessment findings confirms this diagnosis?",
+  options: ["BP 144/88, HR 74, urine output 45 mL/hr, skin warm and dry", "BP 84/60, HR 122, urine output 16 mL/hr, cool clammy skin", "BP 108/72, HR 56, O2 sat 99%, skin flushed and warm", "BP 92/56, HR 58, RR 14, skin warm and pink"],
+  correct: 1,
+  rationale: "Cardiogenic shock criteria: SBP <90 mmHg (goal: restore SBP >90), HR >100 bpm (goal: reduce to <100), urine output <30 mL/hr (goal: ≥30 mL/hr), weak thready pulse, diminished heart sounds, cool/clammy skin (distinguishes from distributive shock which has WARM skin), tachypnea, and pulmonary congestion. The cool, clammy skin in cardiogenic shock reflects compensatory vasoconstriction from low cardiac output. Warm, flushed skin suggests distributive shock (septic, neurogenic, or anaphylactic)."
+},
+{
+  id: 17, type: "sata",
+  stem: "The nurse is caring for a client in cardiogenic shock following MI. Which nursing interventions are appropriate? Select all that apply.",
+  options: ["Administer vasoactive medications as ordered via IV infusion titrated to maintain systolic BP above 90", "Monitor urine output hourly — goal is at least 30 mL/hr", "Provide supplemental oxygen or maintain mechanical ventilation as needed", "Encourage early ambulation to improve cardiac output and prevent deconditioning", "Promote rest periods and energy conservation", "Monitor for dysrhythmias continuously via cardiac telemetry"],
+  correct: [0, 1, 2, 4, 5],
+  rationale: "APPROPRIATE: Vasoactive medications (dopamine, norepinephrine) restore perfusion pressure; hourly urine monitoring (oliguria <30 mL/hr is a hallmark finding and treatment response indicator); oxygenation (may require intubation for refractory hypoxia); energy conservation with rest periods (decreases myocardial oxygen demand); continuous telemetry (shock patients are at high risk for fatal dysrhythmias). NOT APPROPRIATE: Ambulation is ABSOLUTELY CONTRAINDICATED in cardiogenic shock — hemodynamic instability is incompatible with activity; exertion could precipitate cardiac arrest."
+},
+{
+  id: 18, type: "mc",
+  stem: "A client presents to a rural emergency department with STEMI and PCI is unavailable. The nearest cath lab is 2.5 hours away by transport. Which medication should the nurse anticipate administering?",
+  options: ["Clopidogrel (Plavix) 600 mg PO loading dose", "Alteplase (tPA) per thrombolytic therapy protocol", "Metoprolol 5 mg IV push for rate control", "Digoxin 0.25 mg IV for cardiac output support"],
+  correct: 1,
+  rationale: "When PCI is unavailable and the client cannot be safely transferred to a cath lab within 90 minutes, thrombolytic therapy (alteplase, reteplase) should be initiated within 30 minutes of ED presentation (door-to-needle time <30 min). Thrombolytics dissolve the coronary thrombus occluding the artery, restoring blood flow. STEMI is caused by plaque rupture → rapid clot formation → complete coronary occlusion. Thrombolytics are most effective when started within 3 hours of symptom onset and only indicated for STEMI — NOT NSTEMI. Always assess for contraindications before administration."
+},
+{
+  id: 19, type: "mc",
+  stem: "A client presents with STEMI symptoms for 40 minutes and requires thrombolytic therapy. Which finding is a contraindication to alteplase administration?",
+  options: ["Troponin I level of 1.8 ng/dL", "O2 saturation of 90% on room air", "Abdominal surgery (splenectomy) performed 3 days ago", "Heart rate of 112 bpm on arrival"],
+  correct: 2,
+  rationale: "Recent surgery within 2–3 weeks is a CONTRAINDICATION to thrombolytic therapy due to high risk of bleeding at surgical wound sites — thrombolytics dissolve ALL clots, including protective hemostatic clots. Other contraindications: history of hemorrhagic stroke (ever) or ischemic stroke within 3 months, severe uncontrolled HTN (>185/110), active internal bleeding, suspected aortic dissection, and significant head trauma/intracranial neoplasm. Elevated troponin confirms MI (expected, not a contraindication). Tachycardia is a response to pain/ischemia. Mild hypoxemia is expected."
+},
+{
+  id: 20, type: "mc",
+  stem: "A client is being discharged with sublingual nitroglycerin (NTG) for stable angina. Which statement by the client BEST indicates effective teaching?",
+  options: ["\"If my chest pain doesn't improve after 3 tablets in 15 minutes, I'll call my doctor in the morning.\"", "\"I should swallow the tablet whole with a full glass of water for best absorption.\"", "\"Getting a headache after taking this medication means I'm allergic to it.\"", "\"I'll sit or lie down before taking nitroglycerin because it can cause dizziness from low blood pressure.\""],
+  correct: 3,
+  rationale: "Nitroglycerin causes significant vasodilation → hypotension → dizziness and falls. Patients MUST sit or lie down before taking NTG. Correct NTG teaching: (1) Rest and take 1 sublingual tablet. (2) If NO relief — CALL 911 immediately. (3) While waiting for EMS, may take 2 more tablets at 5-minute intervals (up to 3 total). (4) Headache is a COMMON side effect from vasodilation — NOT an allergy. (5) Tablets dissolve UNDER the tongue — never swallow. (6) Store in dark, airtight container (light and heat degrade NTG). The answer stating 'call 911 after the FIRST tablet with no relief' is the safest teaching."
+},
+{
+  id: 21, type: "sata",
+  stem: "A nurse is developing a teaching plan for a client newly prescribed sublingual nitroglycerin for angina. Which instructions should the nurse include? Select all that apply.",
+  options: ["Stop activity and rest at the first sign of chest pain before taking the tablet", "Place one tablet under the tongue; if no relief, call 911 immediately", "Headache after taking nitroglycerin is a common side effect and does not indicate allergy", "Store tablets in a dark, airtight container away from heat and light sources", "Take up to 5 tablets in 5-minute intervals before seeking emergency care", "Sit or stand slowly after taking nitroglycerin to prevent falls from hypotension"],
+  correct: [0, 1, 2, 3, 5],
+  rationale: "INCLUDE IN TEACHING: Rest before/during angina to reduce oxygen demand; sublingual administration (not swallow); headache is expected (vasodilation effect); proper storage (light and moisture degrade NTG rapidly — keep in original amber glass bottle); sit/lie to prevent orthostatic hypotension. DO NOT include: Maximum is 3 tablets total in 5-minute intervals — NOT 5 tablets. The NCLEX standard is: 1 tablet → no relief → CALL 911. While waiting for EMS, may take 2 more at 5-minute intervals. With 5-tablet teaching, the client delays emergency care dangerously."
+},
+{
+  id: 22, type: "mc",
+  stem: "The nurse is preparing to administer digoxin 0.125 mg PO to a client with heart failure. Which assessment finding requires the nurse to HOLD the medication and contact the provider?",
+  options: ["Serum potassium 3.8 mEq/L", "Apical pulse 52 beats per minute", "Blood pressure 118/74 mmHg", "Respiratory rate 18 breaths per minute"],
+  correct: 1,
+  rationale: "ALWAYS assess apical pulse for ONE FULL MINUTE before administering digoxin. HOLD digoxin and notify provider if apical pulse <60 bpm (bradycardia — digoxin would further slow rate, risking heart block or arrest). Therapeutic level: 0.5–2.0 ng/mL. Signs of toxicity: bradycardia, dysrhythmias, nausea/vomiting, visual changes (yellow-green halos, blurred vision), and anorexia. Note: Hypokalemia (K+ <3.5) increases digoxin toxicity risk significantly — furosemide patients are particularly at risk. K+ 3.8 is within normal range (3.5–5.0 mEq/L)."
+},
+{
+  id: 23, type: "mc",
+  stem: "A client on digoxin reports seeing yellow-green halos around lights, nausea, and feeling their heart 'skipping beats.' What is the nurse's PRIORITY action?",
+  options: ["Administer the next scheduled digoxin dose as ordered", "Check digoxin level, hold dose, and notify the provider immediately", "Reassure the client that these are normal side effects of the medication", "Administer atropine IV as ordered for the bradycardia"],
+  correct: 1,
+  rationale: "Yellow-green visual disturbances (xanthopsia), GI symptoms, and dysrhythmias ('skipping beats') are CLASSIC signs of digoxin toxicity — these should be memorized. Priority: HOLD digoxin, obtain serum digoxin level, check electrolytes (especially potassium — hypokalemia worsens toxicity), and IMMEDIATELY notify the provider. Antidote for severe digoxin toxicity: digoxin immune Fab (Digibind/DigiFab). NEVER reassure a client that toxicity symptoms are 'normal.' These are NOT normal side effects — they are emergency signs."
+},
+{
+  id: 24, type: "mc",
+  stem: "A client newly diagnosed with chronic heart failure asks what they need to monitor at home to prevent rehospitalization. Which instruction should the nurse prioritize?",
+  options: ["Weigh yourself weekly at any convenient time of day", "Report a weight gain of more than 5 pounds in one week or 2–3 pounds in one day", "Increase sodium intake to 4 grams per day to maintain blood pressure", "Exercise vigorously every day regardless of how you feel"],
+  correct: 1,
+  rationale: "Daily weight monitoring is the GOLD STANDARD for detecting early fluid retention in HF. Protocol: Same scale, same time, EVERY MORNING, before breakfast and after voiding. Report gain of 2–3 lbs in 1 day or 5 lbs in 1 week to the provider — this represents significant fluid accumulation requiring medication adjustment before decompensation occurs. Sodium restriction (typically 2 g/day) prevents fluid retention. Exercise should be activity-appropriate based on NYHA classification — vigorous exercise without regard to symptoms is NOT appropriate for HF patients."
+},
+{
+  id: 25, type: "sata",
+  stem: "A client with decompensated heart failure develops acute pulmonary edema. Which assessment findings does the nurse expect? Select all that apply.",
+  options: ["Sudden onset of severe dyspnea and orthopnea", "Pink, frothy, blood-tinged sputum", "Cool, clammy, pale skin with cyanotic nailbeds", "Bradycardia (HR < 60 bpm)", "Crackles (rales) throughout bilateral lung fields", "Restlessness and anxiety progressing to confusion"],
+  correct: [0, 1, 2, 4, 5],
+  rationale: "EXPECTED IN PULMONARY EDEMA: Sudden dyspnea and orthopnea (alveoli flooding with fluid), frothy blood-tinged sputum (a late/life-threatening sign — fluid in airways), cool/clammy skin with cyanosis (reduced cardiac output + hypoxemia), widespread crackles (fluid throughout lung fields), and restlessness/anxiety (hypoxemia effect on brain — progresses to confusion then unconsciousness). NOT EXPECTED: Bradycardia. The heart compensates for poor output with TACHYCARDIA (compensatory mechanism). Bradycardia in pulmonary edema would be an ominous sign of cardiac decompensation requiring immediate emergency response."
+},
+{
+  id: 26, type: "mc",
+  stem: "A nurse enters a client's room and finds them lying supine, extremely tachypneic with labored breathing, cool clammy skin, and cyanotic lips. The nurse suspects acute pulmonary edema. What is the FIRST action?",
+  options: ["Auscultate lung sounds to confirm the presence of crackles", "Obtain a pulse oximetry reading to determine severity", "Check vital signs to assess hemodynamic stability", "Elevate the head of the bed to high Fowler's position"],
+  correct: 3,
+  rationale: "When clinical presentation clearly indicates pulmonary edema (tachypnea, cyanosis, supine position), the FIRST nurse-initiated action is positioning — elevate HOB to high Fowler's (60–90°) immediately. This reduces venous return, decreases preload, and immediately reduces pulmonary congestion — no order required. This is an ABC intervention (Airway/Breathing). Assessment activities (auscultation, pulse ox, vitals) are SECONDARY to the intervention when the clinical picture is clear. The NCLEX principle: when assessment and intervention are both options and the diagnosis is clear, choose the life-saving intervention first."
+},
+{
+  id: 27, type: "mc",
+  stem: "A client with heart failure reports no symptoms at rest but experiences significant fatigue, dyspnea, and palpitations when walking to the mailbox or performing light household tasks. The nurse documents which New York Heart Association (NYHA) class?",
+  options: ["Class I — No symptoms with any level of activity", "Class II — Slight limitation with ordinary activity; symptoms with moderate exertion", "Class III — Marked limitation; comfortable only at rest", "Class IV — Symptoms present at rest; unable to carry on physical activity without discomfort"],
+  correct: 1,
+  rationale: "NYHA Classification: Class I = No symptoms with any activity, ADLs OK, no lung congestion. Class II = Slight limitation in physical activity; comfortable at rest; ordinary activity (walking to mailbox, light housework) causes palpitations, fatigue, dyspnea. Class III = Marked limitation; ordinary activity causes symptoms; comfortable ONLY at rest. Class IV = Cardiac insufficiency at rest; cannot carry on any physical activity without discomfort. This is commonly tested — memorize the spectrum from 'I (asymptomatic) through IV (symptoms at rest).'"
+},
+{
+  id: 28, type: "mc",
+  stem: "A client with ACS and ejection fraction of 32% is prescribed lisinopril. The client asks the nurse why they need this medication. Which response is BEST?",
+  options: ["'It lowers your cholesterol to prevent plaque buildup in your arteries.'", "'It prevents harmful remodeling of your heart muscle and helps prevent heart failure from developing.'", "'It dissolves any remaining blood clots in your coronary arteries.'", "'It controls your heart rate so your heart doesn't work as hard.'"],
+  correct: 1,
+  rationale: "ACE inhibitors (lisinopril) post-ACS are prescribed for patients with EF ≤40% to prevent ventricular remodeling — structural changes to damaged heart muscle (scar tissue formation, dilation, hypertrophy) that lead to cardiomyopathy and HF. They reduce afterload and preload, improve cardiac output, and significantly improve survival post-MI. Should be started within 48 hours and CONTINUED INDEFINITELY after discharge. Side effects: dry cough (bradykinin accumulation — switch to ARB if intolerable), hyperkalemia, hypotension, angioedema (rare but serious). Statins → cholesterol; thrombolytics → clots; beta blockers → HR."
+},
+{
+  id: 29, type: "mc",
+  stem: "A client starting lisinopril for heart failure calls the clinic reporting a persistent dry cough. Which response by the nurse is most appropriate?",
+  options: ["'Stop taking the medication immediately as this is a serious allergic reaction.'", "'Take an antihistamine with each dose to suppress the cough reflex.'", "'This is a common side effect. I will notify the provider who may consider switching to an ARB.'", "'This cough is unrelated to your medication — you should see your primary doctor for a cold.'"],
+  correct: 2,
+  rationale: "Dry, persistent cough is the MOST COMMON side effect of ACE inhibitors (up to 15–20% of patients). It is caused by accumulation of bradykinin (normally broken down by ACE enzyme). It is NOT dangerous and NOT an allergy — but is bothersome and can impair medication adherence. Clinical management: notify provider, who may substitute an Angiotensin Receptor Blocker (ARB — e.g., losartan, valsartan). ARBs provide the same cardioprotective benefit WITHOUT causing cough. The client should NEVER stop a cardiac medication without provider guidance."
+},
+{
+  id: 30, type: "sata",
+  stem: "A client is discharged on metoprolol succinate after MI. Which instructions should the nurse include in teaching? Select all that apply.",
+  options: ["Do not stop this medication abruptly without contacting your provider", "Check your pulse before taking each dose; hold and call provider if HR is below 60 bpm", "Report symptoms of dizziness, lightheadedness, or fainting which may indicate bradycardia", "If you are diabetic, this medication may mask the symptoms of low blood sugar (hypoglycemia)", "Take this medication with a high-fat meal to maximize absorption", "You may discontinue this medication once you 'feel better' from the heart attack"],
+  correct: [0, 1, 2, 3],
+  rationale: "CRITICAL BETA BLOCKER TEACHING: NEVER stop abruptly (can trigger rebound tachycardia, angina, or MI from sudden catecholamine surge). Check pulse daily; hold if <60 (discuss with provider). Report bradycardia symptoms. Important: beta blockers blunt tachycardia (the earliest hypoglycemia warning) in diabetics — only diaphoresis remains as a warning sign. These are lifelong cardiac medications after MI. NOT CORRECT: Food doesn't significantly affect metoprolol succinate extended-release absorption. NEVER tell a cardiac patient to stop medications when they feel better — these drugs protect against reinfarction indefinitely."
+},
+{
+  id: 31, section: "HEALTH PROMOTION & DISEASE PREVENTION",
+  type: "mc",
+  stem: "A community health nurse is presenting to a group about preventing coronary artery disease. Which risk factor is NON-MODIFIABLE and should be explained as such?",
+  options: ["Hypertension (HTN)", "Cigarette smoking", "Age and male sex", "Hypercholesterolemia"],
+  correct: 2,
+  rationale: "NON-MODIFIABLE risk factors for CAD: age (men >45, women >55 years), male sex (higher baseline risk until women reach menopause), family history/genetics, and race/ethnicity. MODIFIABLE risk factors (can be changed/treated): hypertension, smoking, hyperlipidemia (high LDL/low HDL), diabetes, obesity, physical inactivity, stress, and diet. Teaching clients about non-modifiable risks helps them understand WHY screening and aggressive management of modifiable risks is especially important for them."
+},
+{
+  id: 32, type: "sata",
+  stem: "A nurse is educating a community group about preventing atherosclerosis. Which are modifiable risk factors? Select all that apply.",
+  options: ["Hypercholesterolemia (elevated LDL cholesterol)", "Genetic predisposition / family history of CAD", "Hypertension (BP consistently elevated)", "Obesity (BMI ≥ 30 kg/m²)", "Cigarette smoking", "Age greater than 65 years"],
+  correct: [0, 2, 3, 4],
+  rationale: "MODIFIABLE: Hypercholesterolemia (diet, statins, lifestyle changes), hypertension (antihypertensives, DASH diet, exercise, sodium restriction), obesity (diet, exercise, weight management), and smoking (cessation — the single most impactful modifiable risk factor for CAD). NOT MODIFIABLE: Genetic predisposition/family history and age are fixed. However, understanding non-modifiable risks motivates more aggressive management of modifiable risks. The presence of multiple modifiable risk factors dramatically multiplies cardiovascular risk — this is the key message for health promotion."
+},
+{
+  id: 33, type: "mc",
+  stem: "A client is newly prescribed atorvastatin (Lipitor) for hypercholesterolemia. Which instruction about timing is MOST important?",
+  options: ["Take in the morning to maximize liver processing throughout the day", "Take in the evening since the liver produces most cholesterol at night", "Take with grapefruit juice for best absorption", "Discontinue after 3 months once your cholesterol normalizes"],
+  correct: 1,
+  rationale: "Statins (HMG-CoA reductase inhibitors) are most effective when taken in the EVENING because the liver produces the majority of cholesterol at NIGHT. Taking atorvastatin in the evening maximizes inhibition of this enzyme during peak synthesis. IMPORTANT: AVOID grapefruit and grapefruit juice — inhibits CYP3A4 enzyme, causing toxic statin accumulation and increased risk of myopathy/rhabdomyolysis. Statins are typically LIFELONG medications — stopping when cholesterol improves causes levels to return to baseline. Key side effects to monitor: myopathy, elevated liver enzymes, rhabdomyolysis."
+},
+{
+  id: 34, type: "mc",
+  stem: "The nurse is teaching a client prescribed atorvastatin. Which side effect requires IMMEDIATE provider notification?",
+  options: ["Mild constipation or stomach upset", "Unexplained severe muscle pain, tenderness, or weakness", "Mild fatigue during the first week of therapy", "Mild headache"],
+  correct: 1,
+  rationale: "Myopathy (muscle pain, weakness, tenderness) and rhabdomyolysis (severe muscle breakdown) are SERIOUS statin side effects. Rhabdomyolysis releases myoglobin into the bloodstream → acute kidney injury. Clients must report unexplained muscle symptoms IMMEDIATELY. Risk increases with: high-dose statins, concurrent use of fibrates or niacin, grapefruit consumption, and CYP3A4 inhibitors. Creatine kinase (CK) levels should be monitored. Mild GI symptoms, fatigue, and headache are common and typically transient — take with food for GI symptoms."
+},
+
+// BOWTIE Q35
+{
+  id: 35, type: "bowtie",
+  stem: "A 65-year-old male with a history of hypertension and hyperlipidemia presents to the ED with crushing chest pain 9/10 radiating to the left jaw and left arm, profuse diaphoresis, nausea, and dyspnea for 90 minutes. O2 sat is 88% on room air. EKG shows ST elevation in leads V1–V4.",
+  left: {
+    title: "Assessment Findings Supporting Diagnosis",
+    hint: "Select 2 findings",
+    count: 2,
+    options: ["ST elevation in leads V1–V4", "Age and history of hypertension and hyperlipidemia", "Nausea and vomiting alone", "Temperature 99.1°F"],
+    correct: [0, 1]
+  },
+  center: "STEMI — Anterior Wall MI",
+  right: {
+    title: "Priority Nursing Actions",
+    hint: "Select 2 actions",
+    count: 2,
+    options: ["Apply O2 and prepare for emergent PCI within 90 minutes", "Administer aspirin 325 mg chewed and establish large-bore IV access", "Begin immediate ambulation to improve circulation", "Obtain a dietary consult for heart-healthy menu"],
+    correct: [0, 1]
+  },
+  monitor: {
+    title: "Parameters to Monitor",
+    hint: "Select 2 parameters",
+    count: 2,
+    options: ["Pain level (0–10 scale) and O2 saturation", "Cardiac rhythm and vital signs continuously", "Daily caloric intake", "Hair and skin condition"],
+    correct: [0, 1]
+  },
+  rationale: "The ST elevation in V1–V4 confirms anterior STEMI (LAD occlusion). Risk factor history (HTN, hyperlipidemia) along with classic symptoms (chest pain radiating to jaw/arm, diaphoresis, nausea) and hypoxemia support the diagnosis. PRIORITY ACTIONS: Address hypoxemia (O2 sat 88% — below threshold), aspirin for antiplatelet effect, IV access for medications, and emergent PCI within 90 minutes (door-to-balloon time standard). MONITOR: Pain (treatment response indicator), SpO2, continuous cardiac monitoring (life-threatening dysrhythmias), vital signs, and troponin trending."
+},
+
+{
+  id: 36, type: "mc",
+  stem: "A client is scheduled for cardiac catheterization via the femoral approach. Which pre-procedure teaching is MOST important for the nurse to include?",
+  options: ["'You will receive general anesthesia and won't feel anything during the procedure.'", "'Please notify us if you have any allergies to iodine, seafood, or contrast dye.'", "'You may eat a light breakfast 2 hours before your procedure.'", "'The procedure typically takes 10–15 minutes to complete.'"],
+  correct: 1,
+  rationale: "Contrast dye used in cardiac catheterization is IODINE-BASED. Clients with iodine or shellfish allergies may have cross-reactive allergic responses, including anaphylaxis. Pre-medication with corticosteroids and antihistamines may be required. ALSO assess for metformin use (hold for contrast) and renal function (BUN, creatinine — contrast nephropathy risk). The client is NPO before the procedure, not allowed to eat. Sedation is used (NOT general anesthesia). Duration varies based on findings. Allergy assessment is the most critical patient safety concern."
+},
+{
+  id: 37, type: "sata",
+  stem: "The nurse is providing post-procedure care for a client following cardiac catheterization via the femoral artery. Which nursing interventions are appropriate? Select all that apply.",
+  options: ["Frequently monitor the puncture site for signs of bleeding or hematoma", "Keep the affected leg straight and immobile per protocol", "Perform neurovascular checks — assess the 5 P's in the affected extremity", "Encourage ambulation within 30 minutes to prevent DVT after femoral cath", "Ensure adequate fluid intake to facilitate excretion of contrast dye", "Monitor urine output and report output less than 30 mL/hr"],
+  correct: [0, 1, 2, 4, 5],
+  rationale: "POST-CATH FEMORAL CARE: Monitor puncture site (arterial hemorrhage risk), keep leg STRAIGHT (arterial bleeding/sheath dislodgement), perform 5 P's neurovascular assessment (pain, pallor, pulse, paresthesia, paralysis — detect arterial occlusion), ensure IV/oral fluids for contrast excretion (prevents contrast-induced nephropathy), and monitor urine output (contrast nephropathy). NOT APPROPRIATE: Ambulation is RESTRICTED for 2–6 hours post-femoral cath (or longer depending on hemostasis). Early ambulation after femoral approach risks hematoma, arterial bleeding, or pseudoaneurysm. Radial approach has faster mobility."
+},
+{
+  id: 38, type: "mc",
+  stem: "Following cardiac catheterization via the right femoral artery, the client reports pain, numbness, and tingling in the right foot. The nurse assesses a significantly diminished right pedal pulse. What is the priority action?",
+  options: ["Apply a warm compress to the right foot to improve circulation", "Elevate the right leg on two pillows to reduce swelling", "Notify the provider immediately regarding signs of neurovascular compromise", "Administer the ordered analgesic and reassess in 30 minutes"],
+  correct: 2,
+  rationale: "The 5 P's findings (pain, paresthesia, diminished pulse — with potential pallor and paralysis) indicate neurovascular compromise from possible arterial occlusion, thrombosis, or hematoma compression of the femoral artery post-catheterization. This is a VASCULAR EMERGENCY. IMMEDIATELY notify the provider — time-sensitive intervention (embolectomy, thrombus management) may be required to prevent limb ischemia and potential amputation. Do NOT apply heat (increases bleeding), elevate (disrupts hemostasis and circulation), or delay with pain medication administration."
+},
+{
+  id: 39, section: "PRIORITIZATION & MANAGEMENT OF CARE",
+  type: "mc",
+  stem: "A charge nurse on a cardiac telemetry unit is receiving morning report on four clients. Which client should the nurse assess FIRST?",
+  options: ["Client with chronic HF who gained 2 pounds overnight on morning weight", "Client 2 hours post-PCI with a new onset of absent right pedal pulse", "Client with stable angina requesting pain medication for 3/10 discomfort", "Client with hypertension whose blood pressure is 152/94 mmHg"],
+  correct: 1,
+  rationale: "Absent pedal pulse 2 hours post-PCI represents a VASCULAR EMERGENCY — possible arterial occlusion, thrombosis, or significant hematoma threatening limb viability. This is an immediate life-AND-limb threatening situation. Post-PCI complications include: arterial thrombosis, embolism, retroperitoneal hemorrhage, and pseudoaneurysm. The 2-lb overnight weight gain in HF is concerning but not immediately life-threatening (can be addressed next). Stable angina 3/10 is manageable. Mildly elevated BP requires monitoring but is not emergent."
+},
+{
+  id: 40, type: "mc",
+  stem: "The registered nurse is caring for a stable client post-STEMI day 2. Which task is appropriate to delegate to the unlicensed assistive personnel (UAP)?",
+  options: ["Assessing the client's chest pain response to administered nitroglycerin", "Teaching the client about Phase 1 cardiac rehabilitation exercises and restrictions", "Measuring and recording the client's daily morning weight", "Interpreting the client's telemetry rhythm strip for dysrhythmias"],
+  correct: 2,
+  rationale: "APPROPRIATE FOR UAP DELEGATION: Measuring and recording vital signs, weights, intake/output, and other objective data collection. Daily weight is a measurement task within UAP scope. NOT DELEGABLE TO UAP: Assessment (pain assessment and response evaluation requires RN clinical judgment), patient education (requires RN-level teaching and evaluation of learning), and telemetry interpretation (requires RN clinical judgment). The 5 Rights of Delegation: right task, right circumstances, right person, right directions/communication, right supervision."
+},
+{
+  id: 41, type: "sata",
+  stem: "The RN is delegating tasks to a UAP caring for a stable client with chronic heart failure on furosemide. Which instructions should the RN give? Select all that apply.",
+  options: ["Record the client's urine output every shift and report total at shift end", "Weigh the client every morning before breakfast and before first void", "Report any client complaints of dizziness or lightheadedness to the RN immediately", "Adjust the furosemide dose if the client's urine output drops below 30 mL/hr", "Report urine output less than 30 mL/hr to the RN right away", "Encourage the client to drink 3 liters of fluid per day to prevent dehydration"],
+  correct: [0, 1, 2, 4],
+  rationale: "APPROPRIATE DELEGATION TO UAP: Measuring and recording urine output (objective measurement), daily weights (measurement), and REPORTING abnormal findings to the RN (critical reporting — not acting on them). NOT APPROPRIATE: Adjusting medication doses is OUTSIDE UAP scope — this is an RN/provider function. Instructing clients about fluid management requires RN-level clinical judgment (HF patients have fluid restrictions, not encouragement to drink freely). The UAP's role is to collect, report, and communicate data — NOT to independently evaluate or respond to clinical findings."
+},
+{
+  id: 42, section: "THERAPEUTIC COMMUNICATION & PSYCHOSOCIAL",
+  type: "mc",
+  stem: "A client newly diagnosed with heart failure states, 'I'm so scared. I don't know how I'm going to manage all these medications and diet changes at home.' Which is the BEST therapeutic response?",
+  options: ["'Don't worry — most people manage just fine once they settle into a routine at home.'", "'You're lucky you have such a good support system. You'll do great.'", "'I understand this feels really overwhelming right now. Let's talk about your specific concerns.'", "'Let me get you the pamphlet on heart failure management — it has everything you need.'"],
+  correct: 2,
+  rationale: "Therapeutic communication: the BEST response acknowledges the client's emotional experience (validates feeling overwhelmed) and OPENS DIALOGUE for further expression and problem-solving. This is the 'reflecting + open-ended invitation' technique. NON-THERAPEUTIC responses: Minimizing ('don't worry') dismisses the client's valid concerns. Assuming ('you're lucky') projects a narrative. Immediately redirecting to a pamphlet bypasses the client's emotional need and blocks communication. In HF teaching, first addressing emotional barriers to learning creates a more effective teaching environment — clients cannot learn when overwhelmed."
+},
+{
+  id: 43, type: "mc",
+  stem: "A client who recently had a myocardial infarction says to the nurse, 'I feel like I'm going to die. What's the point of all this treatment?' Which response is MOST therapeutic?",
+  options: ["'You're going to be fine — the doctors here are excellent and you're in great hands.'", "'Many people feel this way after a heart attack — it's completely normal to have these thoughts.'", "'You sound like you're feeling very hopeless right now. Tell me more about what you're going through.'", "'You need to stay positive — your attitude really affects your recovery outcome.'"],
+  correct: 2,
+  rationale: "The most therapeutic response reflects the client's emotional state (hopelessness) and uses an open-ended invitation to elaborate — this validates the feeling without reinforcing it and opens space for the client to process their experience. This is especially important because statements about 'dying' and 'no point' may indicate depression or suicidal ideation requiring further assessment. NON-THERAPEUTIC: False reassurance ('you'll be fine'), normalizing without follow-up ('many people feel this way' — alone stops the conversation), and toxic positivity ('stay positive' — dismisses legitimate grief and fear)."
+},
+{
+  id: 44, type: "mc",
+  stem: "A client's family member asks the nurse why supplemental oxygen is not being given to their family member with STEMI, whose current SpO2 is 96% on room air. Which response is MOST accurate?",
+  options: ["'We are conserving our oxygen supplies for when it is truly needed urgently.'", "'We would need a specific provider order before we can administer any oxygen.'", "'Research shows that giving oxygen when it isn't needed can actually increase resistance in the coronary arteries, reducing heart blood flow.'", "'The client is too stable at this point to require supplemental oxygen therapy.'"],
+  correct: 2,
+  rationale: "Oxygen is a DRUG and should only be used when clinically indicated. For ACS/STEMI, oxygen is only recommended if SpO2 <90%. Studies demonstrate that supplemental oxygen in non-hypoxemic ACS patients: increases coronary vascular resistance, decreases coronary blood flow, promotes reactive oxygen species formation, and has been associated with INCREASED MORTALITY. SpO2 96% does NOT indicate hypoxemia. Current AHA guidelines explicitly recommend against routine oxygen in normoxic ACS patients. This is a high-yield, often-tested concept — oxygen is NOT automatically given in ACS."
+},
+{
+  id: 45, type: "mc",
+  stem: "A client with ACS receives morphine 2 mg IV push for unrelieved chest pain. Which assessment finding is the PRIORITY concern?",
+  options: ["Client reports nausea following administration", "Client appears drowsy and falls asleep", "Blood pressure drops from 132/80 to 88/58 mmHg", "Respiratory rate of 14 breaths per minute"],
+  correct: 2,
+  rationale: "MORPHINE ADVERSE EFFECTS IN ACS: Hypotension is the PRIORITY concern. Morphine causes peripheral vasodilation → reduced preload → decreased BP. In ACS, hypotension reduces coronary perfusion pressure, potentially worsening myocardial ischemia. BP drop to 88/58 compromises perfusion and requires immediate assessment and provider notification. ANTIDOTE for morphine overdose: NALOXONE (Narcan). Other morphine adverse effects: respiratory depression (monitor RR), bradycardia, severe vomiting. RR 14 is within normal (12-20); drowsiness is expected; nausea is common but not priority over hemodynamic compromise."
+},
+{
+  id: 46, type: "sata",
+  stem: "An emergency department nurse is assessing a client with suspected acute myocardial infarction. Which manifestations does the nurse expect to find? Select all that apply.",
+  options: ["Dyspnea", "Nausea and vomiting", "Profuse diaphoresis", "Tachycardia", "Hypertension (elevated BP from pain and catecholamine release)", "Severe left flank pain radiating to the back"],
+  correct: [0, 1, 2, 3, 4],
+  rationale: "CLASSIC MI PRESENTATION: Dyspnea (reduced cardiac output, pulmonary congestion), nausea/vomiting (vagal stimulation, especially with inferior MI), diaphoresis (sympathetic activation), tachycardia (compensatory response to reduced output + catecholamine release), and hypertension (early response to pain and sympathetic surge — may see hypotension later if cardiac output falls severely). NOT EXPECTED: Severe flank pain radiating to back suggests renal etiology (kidney stone) or aortic aneurysm. ATYPICAL MI PRESENTATION (especially women, elderly, diabetics): jaw pain alone, upper back pain, epigastric pain, fatigue, without classic chest pain."
+},
+{
+  id: 47, type: "mc",
+  stem: "An ED nurse is preparing to transfer a client with STEMI to the cardiac catheterization lab. Using ISBAR format, which data represents the HIGHEST PRIORITY information to communicate?",
+  options: ["Client's preferred language, insurance information, and next of kin contact", "EKG findings with ST elevation pattern, time of symptom onset, medications given, current vital signs, IV access, and allergy to iodine/contrast", "Client's past social history, living situation, and advance directives", "Client's dietary preferences, activity level prior to admission, and weight"],
+  correct: 1,
+  rationale: "PRIORITY ISBAR for STEMI TRANSFER: The cath lab team MUST receive: (1) EKG findings (specific leads with ST elevation — determines territory of MI), (2) Time of symptom onset and door-to-arrival time (door-to-balloon time tracking is a quality measure), (3) ALL medications given (aspirin, heparin, clopidogrel, nitroglycerin, morphine), (4) Current hemodynamic status and vital signs, (5) IV access (size and location), (6) Allergies — CRITICAL for contrast dye. Social history and dietary preferences are not time-sensitive emergency data for cath lab handoff."
+},
+{
+  id: 48, type: "mc",
+  stem: "A client is being discharged after myocardial infarction and will attend cardiac rehabilitation. Which statement about cardiac rehabilitation is accurate?",
+  options: ["Phase 1 cardiac rehabilitation begins 4–6 weeks after hospital discharge at an outpatient center", "Phase 1 cardiac rehabilitation begins IN the hospital and includes education on symptoms, medications, and activity restrictions", "Clients who received PCI with stent placement do not need cardiac rehabilitation", "Cardiac rehabilitation is only beneficial for clients over 65 years of age"],
+  correct: 1,
+  rationale: "CARDIAC REHABILITATION PHASES: Phase 1 = INPATIENT (hospital). Begins during hospitalization. Includes: teaching on S&S to report, when to call 911, medications, rest-activity balance, follow-up appointments, risk factor modification. Phase 2 = OUTPATIENT. 3x/week for 4–6 weeks. Supervised exercise with continuous ECG monitoring, individual exercise prescription, nutritional counseling, stress management. Phase 3 = MAINTENANCE (unsupervised, ongoing). All post-MI patients — including post-PCI and post-CABG — benefit significantly from cardiac rehabilitation (reduces mortality, improves functional capacity, and addresses psychosocial factors)."
+},
+{
+  id: 49, type: "mc",
+  stem: "A client with ACS has been on unfractionated heparin infusion for 6 days. The nurse notes platelet count dropped from 248,000/mm³ on day 1 to 78,000/mm³ today. What action does the nurse take?",
+  options: ["Document the finding as expected thrombocytopenia from prolonged heparin therapy", "Notify the provider immediately — this finding is consistent with heparin-induced thrombocytopenia (HIT)", "Increase the heparin rate to compensate for the reduced platelet-mediated clotting", "Administer a platelet transfusion and continue heparin as prescribed"],
+  correct: 1,
+  rationale: "HEPARIN-INDUCED THROMBOCYTOPENIA (HIT): A drop of >50% in platelet count within 5–14 days of heparin initiation = HIT until proven otherwise. Paradoxically, HIT CAUSES CLOTTING (not bleeding) — immune complexes activate platelets → widespread thrombosis. IMMEDIATE actions: STOP ALL heparin (including flushes and heparin-coated catheters), notify provider, switch to an alternative anticoagulant (argatroban, fondaparinux). Protamine sulfate is the antidote for heparin OVERDOSE — NOT for HIT. This is life-threatening if not recognized."
+},
+{
+  id: 50, type: "sata",
+  stem: "The nurse is caring for a client on unfractionated heparin IV infusion for ACS. Which nursing interventions are appropriate? Select all that apply.",
+  options: ["Monitor aPTT results every 6 hours and adjust infusion per protocol", "Assess for signs of bleeding: guaiac-positive stools, hematuria, ecchymosis, neurological changes", "Know that protamine sulfate is the antidote for heparin overdose or reversal", "Administer intramuscular injections as ordered while client is on heparin therapy", "Monitor platelet count daily to detect heparin-induced thrombocytopenia (HIT)", "Use the smallest gauge needle and apply prolonged pressure to all venipuncture sites"],
+  correct: [0, 1, 2, 4, 5],
+  rationale: "APPROPRIATE HEPARIN NURSING CARE: Monitor aPTT (therapeutic goal: 60–100 sec or 1.5–2.5× baseline); assess for bleeding (GI, urinary, skin, neuro — bleeding is primary risk); know antidote (protamine sulfate — 1 mg neutralizes 100 units heparin); daily platelet count (HIT detection); minimize puncture trauma. NOT APPROPRIATE: IM injections are CONTRAINDICATED during heparin therapy — hematoma formation at injection sites is a significant risk. Use IV or SubQ routes only, and apply prolonged pressure to ALL venipuncture sites."
+},
+
+{
+  id: 51, section: "CLINICAL DECISION MAKING — Critical Findings",
+  type: "mc",
+  stem: "A nurse on a telemetry unit receives simultaneous alerts on four clients. Which client requires the MOST immediate response?",
+  options: ["Client with HF showing sinus tachycardia at 106 bpm", "Client post-MI showing a new sustained run of ventricular tachycardia (V-tach)", "Client with hypertension showing first-degree AV block on monitor", "Client on digoxin showing occasional premature atrial contractions (PACs)"],
+  correct: 1,
+  rationale: "VENTRICULAR TACHYCARDIA (V-tach) in a post-MI client = IMMEDIATE EMERGENCY. V-tach post-MI can rapidly deteriorate into ventricular fibrillation → cardiac arrest. Sustained V-tach requires immediate assessment (pulse check), code response activation if pulseless, or provider notification and antiarrhythmic therapy (amiodarone) if patient has a pulse. Sinus tachycardia in HF is compensatory and concerning but not immediately life-threatening. First-degree AV block is a benign rhythm finding. Occasional PACs are common in digitalized patients — monitor but not immediately emergent."
+},
+{
+  id: 52, type: "mc",
+  stem: "During assessment of a client 18 hours post-myocardial infarction, the nurse hears a NEW S3 heart sound. What action should the nurse take?",
+  options: ["Document the finding and reassess at the next scheduled assessment in 4 hours", "Instruct the client to perform incentive spirometry to improve lung expansion", "Report the new S3 heart sound to the provider immediately", "Administer the scheduled beta blocker since this is an expected finding"],
+  correct: 2,
+  rationale: "A NEW S3 heart sound (ventricular gallop) post-MI is a significant clinical finding indicating ventricular dysfunction and volume overload — early sign of developing heart failure. The S3 is caused by rapid ventricular filling during diastole with a stiff, non-compliant ventricle. This is a NEW finding (not pre-existing) requiring IMMEDIATE provider notification. Additional clinical context: early post-MI S3 may represent loss of significant myocardial function. The provider must evaluate for evolving HF, initiate or adjust therapy, and consider echocardiography to assess ejection fraction."
+},
+{
+  id: 53, type: "mc",
+  stem: "A client taking furosemide for heart failure reports muscle cramps, weakness, and constipation. Which lab finding does the nurse anticipate?",
+  options: ["Serum sodium 142 mEq/L", "Serum potassium 2.8 mEq/L", "Serum magnesium 2.0 mg/dL", "Serum calcium 9.0 mg/dL"],
+  correct: 1,
+  rationale: "Furosemide (loop diuretic) promotes POTASSIUM EXCRETION in the urine → hypokalemia. Symptoms of hypokalemia: muscle weakness, cramps, fatigue, constipation (GI smooth muscle effects), cardiac dysrhythmias. K+ 2.8 mEq/L is critically low (normal 3.5–5.0 mEq/L). CRITICAL: Hypokalemia significantly increases DIGOXIN TOXICITY risk — patients on both furosemide AND digoxin require very close potassium monitoring. Teaching: eat potassium-rich foods (bananas, oranges, potatoes, dark leafy greens). Provider may prescribe potassium supplements. Consider potassium-sparing diuretics."
+},
+{
+  id: 54, type: "mc",
+  stem: "A client with heart failure is prescribed hydrochlorothiazide (HCTZ). Which adverse effects should the nurse monitor for?",
+  options: ["Hyperkalemia and fluid volume overload", "Hypokalemia and photosensitivity", "Bradycardia and hypoglycemia", "Hypernatremia and hyperkalemia"],
+  correct: 1,
+  rationale: "Hydrochlorothiazide (thiazide diuretic) adverse effects: HYPOKALEMIA (potassium wasting), hyponatremia, hypomagnesemia, PHOTOSENSITIVITY (skin sensitivity to sunlight — educate to use sunscreen), hyperglycemia (thiazides can cause glucose intolerance), hyperuricemia (gout risk), and hypercalcemia. CONTRAINDICATION: Sulfa drug allergy (HCTZ contains sulfonamide group). Thiazides are LESS potent diuretics than loop diuretics (furosemide) — preferred for mild HF and hypertension. Monitor electrolytes regularly, especially potassium (increased digoxin toxicity risk)."
+},
+
+// BOWTIE Q55
+{
+  id: 55, type: "bowtie",
+  stem: "A 78-year-old female is 28 hours post-cardiac surgery. The nurse notes urine output of 18 mL/hr at 0900 and 16 mL/hr at 1000. The client received a 500 mL NS bolus without improvement. BUN is 48 mg/dL (normal 7–20) and creatinine is 2.4 mg/dL (baseline 0.8 mg/dL).",
+  left: {
+    title: "Clinical Findings Supporting Diagnosis",
+    hint: "Select 2 findings",
+    count: 2,
+    options: ["Urine output <30 mL/hr for 2+ hours despite fluid bolus", "BUN 48 and creatinine 2.4 — significantly above baseline", "Temperature 99.0°F", "HR 88 bpm and regular"],
+    correct: [0, 1]
+  },
+  center: "Acute Kidney Injury (AKI) — Post-surgical",
+  right: {
+    title: "Priority Nursing Actions",
+    hint: "Select 2 actions",
+    count: 2,
+    options: ["Notify provider and continue strict hourly urine output monitoring", "Review medication list and hold nephrotoxic medications (NSAIDs, aminoglycosides, ACE inhibitors if applicable)", "Encourage ambulation to improve renal perfusion", "Increase dietary protein intake immediately"],
+    correct: [0, 1]
+  },
+  monitor: {
+    title: "Parameters to Monitor",
+    hint: "Select 2 parameters",
+    count: 2,
+    options: ["Hourly urine output and fluid balance (I&O)", "Trending BUN and creatinine levels", "Daily caloric intake from meals", "Hair growth and skin turgor only"],
+    correct: [0, 1]
+  },
+  rationale: "Post-surgical AKI is characterized by oliguria (<0.5 mL/kg/hr or <30 mL/hr) unresponsive to fluid challenge, and rising BUN/creatinine above baseline. Creatinine 2.4 vs. baseline 0.8 = 3× increase = Stage 2 AKI (KDIGO criteria). PRIORITY ACTIONS: Provider notification (may require nephrology consult), hold nephrotoxic drugs, strict I&O monitoring. MONITOR: Hourly urine output (target ≥30 mL/hr), electrolytes (hyperkalemia risk in AKI — life-threatening dysrhythmias), acid-base status, and renal function trending. Post-cardiac surgery AKI is associated with use of contrast dye, hypotension, and reduced renal perfusion during cardiopulmonary bypass."
+},
+
+{
+  id: 56, section: "HEALTH PROMOTION — Risk Identification",
+  type: "mc",
+  stem: "A community nurse is conducting a cardiac health fair. Which client is at the HIGHEST risk for developing coronary artery disease?",
+  options: ["35-year-old female marathon runner, total cholesterol 158 mg/dL, non-smoker", "55-year-old male with 30 pack-year smoking history, type 2 diabetes, and BMI 36", "45-year-old female, BP 122/78, no family history, cholesterol within normal limits", "62-year-old male who exercises regularly, LDL 90 mg/dL, BP controlled"],
+  correct: 1,
+  rationale: "Risk factor ACCUMULATION is key — each additional major risk factor multiplies cardiovascular risk exponentially. The 55-year-old male has: age and male sex (non-modifiable), active smoking (major modifiable — most powerful single modifiable risk for CAD), type 2 diabetes (doubles CAD risk, promotes atherosclerosis through multiple mechanisms), and obesity/BMI 36 (metabolic syndrome). This combination of 4+ significant risk factors creates dramatically elevated cardiovascular risk. The female marathon runner's cardioprotective lifestyle and optimal labs represent the lowest risk profile."
+},
+{
+  id: 57, type: "sata",
+  stem: "A nurse is developing a discharge teaching plan for a client focused on reducing heart disease risk. Which behaviors should be included? Select all that apply.",
+  options: ["Follow a heart-healthy diet such as the Mediterranean diet or DASH diet", "Maintain a healthy weight and BMI within normal range", "Engage in moderate-intensity aerobic exercise for at least 150 minutes per week", "Eliminate ALL dietary fat from meals to prevent cholesterol buildup", "Quit smoking and avoid secondhand smoke exposure", "Develop healthy stress management techniques (meditation, social support, counseling)"],
+  correct: [0, 1, 2, 4, 5],
+  rationale: "HEART-HEALTHY BEHAVIORS: Heart-healthy diets (Mediterranean and DASH reduce cardiovascular events by 20–30%), weight management, regular aerobic exercise (150 min/week moderate intensity improves lipid profile and BP), smoking cessation (most impactful modifiable behavior), and stress management (chronic stress promotes cortisol/catecholamine release, contributing to HTN and atherosclerosis). NOT APPROPRIATE: Eliminating ALL dietary fat is incorrect and potentially harmful — healthy fats (omega-3 fatty acids, monounsaturated fats from olive oil, avocado, nuts) are cardioprotective. The goal is limiting saturated and trans fats, not all fat."
+},
+{
+  id: 58, type: "mc",
+  stem: "The nurse is assessing a client with a history of hypertension. Current BP is 218/128 mmHg with reports of severe headache, blurred vision, and confusion. What action should the nurse take FIRST?",
+  options: ["Administer the next scheduled oral antihypertensive medication", "Place the client in a quiet dark room and reassess blood pressure in 30 minutes", "Notify the provider immediately and prepare for IV antihypertensive therapy", "Obtain orthostatic vital signs to rule out positional hypotension"],
+  correct: 2,
+  rationale: "BP 218/128 mmHg with neurological symptoms (headache, visual changes, confusion) = HYPERTENSIVE EMERGENCY — end-organ damage is actively occurring (brain, eyes, kidneys, heart). This requires IMMEDIATE IV antihypertensive therapy (nicardipine, labetalol, sodium nitroprusside) with careful titration — avoid reducing BP too rapidly (risk of cerebral ischemia). Provider notification is urgent. KEY DISTINCTION: Hypertensive Urgency = severely elevated BP WITHOUT end-organ damage symptoms. Hypertensive Emergency = severely elevated BP WITH end-organ damage = IV treatment required, ICU monitoring."
+},
+{
+  id: 59, type: "sata",
+  stem: "A client presents with hypertensive emergency (BP 224/130 mmHg). Which assessment findings indicate END-ORGAN DAMAGE? Select all that apply.",
+  options: ["Papilledema observed on funduscopic examination", "Troponin I level 2.4 ng/dL (elevated above normal)", "Serum creatinine 3.1 mg/dL (baseline was 0.9 mg/dL)", "Confusion, disorientation, and altered mental status", "Blood pressure of 224/130 alone without symptoms", "Mild bilateral ankle edema"],
+  correct: [0, 1, 2, 3],
+  rationale: "END-ORGAN DAMAGE indicators in hypertensive emergency: EYES: papilledema (increased intracranial pressure from hypertension — grade IV hypertensive retinopathy). HEART: elevated troponin (hypertensive cardiomyopathy or hypertensive ACS). KIDNEYS: significantly elevated creatinine (hypertensive nephrosclerosis/acute kidney injury). BRAIN: confusion/AMS (hypertensive encephalopathy or hemorrhagic stroke). Also: pulmonary edema, aortic dissection. NOT end-organ damage markers: BP elevation alone = hypertensive urgency (treat orally). Mild bilateral edema is non-specific and does not indicate acute end-organ damage from hypertension."
+},
+{
+  id: 60, section: "FINAL PRIORITIZATION",
+  type: "mc",
+  stem: "A nurse is beginning the day shift on a cardiac unit and receives report on four clients. Which client should the nurse assess FIRST?",
+  options: ["Client with chronic HF requesting their scheduled furosemide dose 30 minutes before the scheduled time", "Client post-STEMI day 1 who reports new onset chest pain rated 6/10 with diaphoresis", "Client with hypertension asking questions about their discharge instructions and home medications", "Client with known atrial fibrillation, rate controlled at HR 86 bpm, no new complaints"],
+  correct: 1,
+  rationale: "New onset chest pain with diaphoresis in a client 24 hours post-STEMI is a RED FLAG EMERGENCY — possible stent thrombosis (most common early post-PCI complication), reinfarction, or pericarditis. Stent thrombosis is life-threatening and time-critical. The nurse must assess IMMEDIATELY and activate rapid response/provider notification. Early post-MI pain is NEVER dismissed — it represents a potentially catastrophic complication. The other clients have stable chronic conditions or non-urgent requests. Client 1 (medication timing) and Client 3 (discharge questions) can wait. Client 4 (controlled AFib) is stable."
+}
+
+]; // END QUESTIONS
+
+// ============================================================
+// STATE
+// ============================================================
+const state = {
+  answers: {},  // qid -> answer data
+  correct: 0,
+  incorrect: 0,
+  answered: 0
+};
+
+// ============================================================
+// RENDER
+// ============================================================
+function render() {
+  const root = document.getElementById('exam-root');
+  let html = '';
+  let lastSection = '';
+  let lastContext = null;
+
+  QUESTIONS.forEach((q, idx) => {
+    // Section header
+    if (q.section && q.section !== lastSection) {
+      html += `<div class="section-header"><div class="section-line"></div><div class="section-tag">&#9829; ${q.section}</div><div class="section-line" style="background: linear-gradient(90deg, transparent, rgba(255,45,85,0.2))"></div></div>`;
+      lastSection = q.section;
+    }
+
+    // Case context
+    if (q.context && q.context !== lastContext) {
+      html += `<div class="case-context"><strong>&#9654; Clinical Scenario</strong>${q.context}</div>`;
+      lastContext = q.context;
+    } else if (!q.context && lastContext) {
+      lastContext = null;
+    }
+
+    html += renderQuestion(q);
+  });
+
+  root.innerHTML = html;
+}
+
+function typeLabel(type) {
+  const map = { mc: 'Multiple Choice', sata: 'SATA', matrix_icne: 'Matrix', matrix_ei: 'Matrix', bowtie: 'Bow-Tie', priority: 'Priority' };
+  return map[type] || type.toUpperCase();
+}
+
+function typeCls(type) {
+  if (type === 'mc') return 'mc';
+  if (type === 'sata') return 'sata';
+  if (type === 'matrix_icne' || type === 'matrix_ei') return 'matrix';
+  if (type === 'bowtie') return 'bowtie';
+  return 'mc';
+}
+
+function renderQuestion(q) {
+  let bodyHtml = '';
+
+  if (q.type === 'mc') bodyHtml = renderMC(q);
+  else if (q.type === 'sata') bodyHtml = renderSATA(q);
+  else if (q.type === 'matrix_icne') bodyHtml = renderMatrixICNE(q);
+  else if (q.type === 'matrix_ei') bodyHtml = renderMatrixEI(q);
+  else if (q.type === 'bowtie') bodyHtml = renderBowtie(q);
+
+  return `
+    <div class="q-card" id="qcard-${q.id}">
+      <div class="q-header">
+        <div class="q-number">Q${q.id}</div>
+        <div class="q-type-badge ${typeCls(q.type)}">${typeLabel(q.type)}</div>
+        <div class="q-stem">${q.stem}</div>
+      </div>
+      <div class="q-body">
+        ${bodyHtml}
+        <button class="submit-btn" id="btn-${q.id}" onclick="submitQuestion(${q.id})">Submit Answer</button>
+        <div class="rationale" id="rat-${q.id}"></div>
+      </div>
+    </div>`;
+}
+
+function shuffle(arr) {
+  const a = [...arr.map((o, i) => ({ o, i }))];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Shuffled options stored per question
+const shuffledMC = {};
+const shuffledSATA = {};
+
+function getShuffledMC(q) {
+  if (!shuffledMC[q.id]) {
+    shuffledMC[q.id] = shuffle(q.options);
+  }
+  return shuffledMC[q.id];
+}
+
+function getShuffledSATA(q) {
+  if (!shuffledSATA[q.id]) {
+    shuffledSATA[q.id] = shuffle(q.options);
+  }
+  return shuffledSATA[q.id];
+}
+
+function renderMC(q) {
+  const opts = getShuffledMC(q);
+  const letters = 'ABCDEFGH';
+  let html = '<div class="mc-options">';
+  opts.forEach((item, li) => {
+    html += `<div class="mc-opt" id="opt-${q.id}-${item.i}" onclick="selectMC(${q.id}, ${item.i})">
+      <div class="opt-letter">${letters[li]}.</div>
+      <div class="opt-text">${item.o}</div>
+      <div class="opt-icon" id="icon-${q.id}-${item.i}"></div>
+    </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderSATA(q) {
+  const opts = getShuffledSATA(q);
+  const letters = 'ABCDEFGH';
+  let html = `<div class="sata-hint">&#9632; Select all that apply</div><div class="mc-options sata-opts">`;
+  opts.forEach((item, li) => {
+    html += `<div class="sata-opt" id="sopt-${q.id}-${item.i}" onclick="toggleSATA(${q.id}, ${item.i})">
+      <div class="sata-checkbox" id="sch-${q.id}-${item.i}"></div>
+      <div style="font-size:11px;color:var(--text-dim);min-width:18px;font-family:'Oxanium',sans-serif;font-weight:700;">${letters[li]}.</div>
+      <div class="opt-text">${item.o}</div>
+    </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderMatrixICNE(q) {
+  let html = `<table class="matrix-table">
+    <thead><tr>
+      <th class="col-action" style="width:55%">Nursing Action</th>
+      <th class="col-indicated">Indicated</th>
+      <th class="col-contraindicated">Contraindicated</th>
+      <th class="col-nonessential">Non-essential</th>
+    </tr></thead><tbody>`;
+  q.rows.forEach((row, ri) => {
+    html += `<tr>
+      <td class="action-cell">${row.action}</td>
+      <td><div class="matrix-radio"><div class="radio-dot" id="mr-${q.id}-${ri}-I" onclick="selectMatrix(${q.id},${ri},'I')"></div></div></td>
+      <td><div class="matrix-radio"><div class="radio-dot" id="mr-${q.id}-${ri}-C" onclick="selectMatrix(${q.id},${ri},'C')"></div></div></td>
+      <td><div class="matrix-radio"><div class="radio-dot" id="mr-${q.id}-${ri}-N" onclick="selectMatrix(${q.id},${ri},'N')"></div></div></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  return html;
+}
+
+function renderMatrixEI(q) {
+  let html = `<table class="matrix-table">
+    <thead><tr>
+      <th class="col-action" style="width:65%">Finding / Client Response</th>
+      <th class="col-effective">Effective</th>
+      <th class="col-ineffective">Ineffective</th>
+    </tr></thead><tbody>`;
+  q.rows.forEach((row, ri) => {
+    html += `<tr>
+      <td class="action-cell">${row.action}</td>
+      <td><div class="matrix-radio"><div class="radio-dot" id="mr-${q.id}-${ri}-E" onclick="selectMatrix(${q.id},${ri},'E')"></div></div></td>
+      <td><div class="matrix-radio"><div class="radio-dot" id="mr-${q.id}-${ri}-I" onclick="selectMatrix(${q.id},${ri},'I')"></div></div></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  return html;
+}
+
+function renderBowtie(q) {
+  const btLeft = shuffle(q.left.options);
+  const btRight = shuffle(q.right.options);
+  const btMon = shuffle(q.monitor.options);
+  // Store shuffled for scoring
+  if (!window._bt) window._bt = {};
+  window._bt[q.id] = { left: btLeft, right: btRight, monitor: btMon };
+
+  function renderBTPanel(panelQ, prefix, shuffled) {
+    let html = `<div class="bt-select-count">Select ${panelQ.count}</div>`;
+    shuffled.forEach(item => {
+      html += `<div class="bowtie-opt" id="bt-${q.id}-${prefix}-${item.i}" onclick="toggleBT(${q.id},'${prefix}',${item.i},${panelQ.count})">
+        <div class="bt-check" id="btch-${q.id}-${prefix}-${item.i}"></div>
+        <div style="font-size:12.5px;line-height:1.4">${item.o}</div>
+      </div>`;
+    });
+    return html;
+  }
+
+  return `<div class="bowtie-wrap">
+    <div class="bowtie-panel left">
+      <h4>${q.left.title}</h4>
+      ${renderBTPanel(q.left, 'L', btLeft)}
+    </div>
+    <div class="bowtie-center">
+      <div class="bowtie-arrow">&#9654;</div>
+      <div class="bowtie-condition">${q.center}</div>
+      <div class="bowtie-arrow">&#9654;</div>
+    </div>
+    <div class="bowtie-panel right">
+      <h4>${q.right.title}</h4>
+      ${renderBTPanel(q.right, 'R', btRight)}
+    </div>
+    <div class="bowtie-panel bottom monitor">
+      <h4>&#9650; ${q.monitor.title}</h4>
+      ${renderBTPanel(q.monitor, 'M', btMon)}
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// INTERACTION
+// ============================================================
+const mcSelected = {};
+const sataSelected = {};
+const matrixSelected = {};
+const btSelected = {};
+
+function selectMC(qid, optIdx) {
+  if (state.answers[qid]) return;
+  mcSelected[qid] = optIdx;
+  const q = QUESTIONS.find(x => x.id === qid);
+  const opts = getShuffledMC(q);
+  opts.forEach(item => {
+    const el = document.getElementById(`opt-${qid}-${item.i}`);
+    if (el) el.classList.toggle('selected', item.i === optIdx);
+  });
+}
+
+function toggleSATA(qid, optIdx) {
+  if (state.answers[qid]) return;
+  if (!sataSelected[qid]) sataSelected[qid] = new Set();
+  const s = sataSelected[qid];
+  if (s.has(optIdx)) s.delete(optIdx);
+  else s.add(optIdx);
+  const el = document.getElementById(`sopt-${qid}-${optIdx}`);
+  const ch = document.getElementById(`sch-${qid}-${optIdx}`);
+  if (el) el.classList.toggle('selected', s.has(optIdx));
+  if (ch) ch.innerHTML = s.has(optIdx) ? '✓' : '';
+}
+
+function selectMatrix(qid, rowIdx, val) {
+  if (state.answers[qid]) return;
+  if (!matrixSelected[qid]) matrixSelected[qid] = {};
+  const prev = matrixSelected[qid][rowIdx];
+  matrixSelected[qid][rowIdx] = val;
+  const q = QUESTIONS.find(x => x.id === qid);
+  const cols = q.type === 'matrix_ei' ? ['E','I'] : ['I','C','N'];
+  cols.forEach(c => {
+    const el = document.getElementById(`mr-${qid}-${rowIdx}-${c}`);
+    if (el) {
+      el.classList.remove('selected-ind','selected-con','selected-non','selected-eff','selected-ine');
+    }
+  });
+  const dot = document.getElementById(`mr-${qid}-${rowIdx}-${val}`);
+  if (dot) {
+    const cls = val==='I'&&q.type!=='matrix_ei'?'selected-ind':val==='C'?'selected-con':val==='N'?'selected-non':val==='E'?'selected-eff':val==='I'&&q.type==='matrix_ei'?'selected-ine':'';
+    if (cls) { dot.classList.add(cls); dot.innerHTML = '●'; }
+  }
+  // clear prev
+  if (prev && prev !== val) {
+    const prevEl = document.getElementById(`mr-${qid}-${rowIdx}-${prev}`);
+    if (prevEl) prevEl.innerHTML = '';
+  }
+}
+
+function toggleBT(qid, prefix, optIdx, maxCount) {
+  if (state.answers[qid]) return;
+  const key = `${qid}-${prefix}`;
+  if (!btSelected[key]) btSelected[key] = new Set();
+  const s = btSelected[key];
+  if (s.has(optIdx)) {
+    s.delete(optIdx);
+  } else {
+    if (s.size >= maxCount) {
+      // deselect first
+      const first = s.values().next().value;
+      s.delete(first);
+      const fEl = document.getElementById(`bt-${qid}-${prefix}-${first}`);
+      const fCh = document.getElementById(`btch-${qid}-${prefix}-${first}`);
+      if (fEl) fEl.classList.remove('selected');
+      if (fCh) fCh.innerHTML = '';
+    }
+    s.add(optIdx);
+  }
+  const el = document.getElementById(`bt-${qid}-${prefix}-${optIdx}`);
+  const ch = document.getElementById(`btch-${qid}-${prefix}-${optIdx}`);
+  if (el) el.classList.toggle('selected', s.has(optIdx));
+  if (ch) ch.innerHTML = s.has(optIdx) ? '✓' : '';
+}
+
+// ============================================================
+// SUBMIT
+// ============================================================
+function submitQuestion(qid) {
+  if (state.answers[qid]) return;
+  const q = QUESTIONS.find(x => x.id === qid);
+  let isCorrect = false;
+  let resultLabel = '';
+
+  if (q.type === 'mc') {
+    const sel = mcSelected[qid];
+    if (sel === undefined) { alert('Please select an answer.'); return; }
+    isCorrect = sel === q.correct;
+    revealMC(q, sel, isCorrect);
+  } else if (q.type === 'sata') {
+    const sel = sataSelected[qid] || new Set();
+    if (sel.size === 0) { alert('Please select at least one answer.'); return; }
+    isCorrect = revealSATA(q, sel);
+  } else if (q.type === 'matrix_icne' || q.type === 'matrix_ei') {
+    const sel = matrixSelected[qid] || {};
+    const allFilled = q.rows.every((_, ri) => sel[ri] !== undefined);
+    if (!allFilled) { alert('Please answer all rows before submitting.'); return; }
+    isCorrect = revealMatrix(q, sel);
+  } else if (q.type === 'bowtie') {
+    const lSel = btSelected[`${qid}-L`] || new Set();
+    const rSel = btSelected[`${qid}-R`] || new Set();
+    const mSel = btSelected[`${qid}-M`] || new Set();
+    if (lSel.size === 0 || rSel.size === 0 || mSel.size === 0) {
+      alert('Please make selections in all sections.'); return;
+    }
+    isCorrect = revealBowtie(q, lSel, rSel, mSel);
+  }
+
+  state.answers[qid] = isCorrect;
+  state.answered++;
+  if (isCorrect) state.correct++; else state.incorrect++;
+
+  // Show rationale
+  const rat = document.getElementById(`rat-${qid}`);
+  const tag = isCorrect ? 'correct' : (q.type === 'sata' || q.type === 'matrix_icne' || q.type === 'matrix_ei' || q.type === 'bowtie') ? 'partial' : 'incorrect';
+  const tagLabel = isCorrect ? '✓ Correct' : (tag === 'partial' ? '~ Partially Correct' : '✕ Incorrect');
+  rat.innerHTML = `<div class="result-tag ${tag}">${tagLabel}</div><strong>Rationale</strong>${q.rationale}`;
+  rat.classList.add('visible');
+
+  // Disable btn
+  const btn = document.getElementById(`btn-${qid}`);
+  if (btn) { btn.textContent = isCorrect ? '✓ Correct!' : '✕ Answered'; btn.disabled = true; }
+
+  // Mark card
+  document.getElementById(`qcard-${qid}`).classList.add('answered');
+
+  updateStats();
+  checkComplete();
+}
+
+function revealMC(q, sel, isCorrect) {
+  const opts = getShuffledMC(q);
+  opts.forEach(item => {
+    const el = document.getElementById(`opt-${q.id}-${item.i}`);
+    const icon = document.getElementById(`icon-${q.id}-${item.i}`);
+    if (!el) return;
+    el.classList.add('revealed', 'disabled');
+    el.onclick = null;
+    if (item.i === q.correct) {
+      el.classList.add('correct');
+      if (icon) icon.textContent = '✓';
+    } else if (item.i === sel && !isCorrect) {
+      el.classList.add('wrong');
+      if (icon) icon.textContent = '✕';
+    }
+  });
+}
+
+function revealSATA(q, sel) {
+  const opts = getShuffledSATA(q);
+  const correctSet = new Set(q.correct);
+  let allRight = true;
+  opts.forEach(item => {
+    const el = document.getElementById(`sopt-${q.id}-${item.i}`);
+    if (!el) return;
+    el.classList.add('revealed', 'disabled');
+    el.onclick = null;
+    const isCorrectOpt = correctSet.has(item.i);
+    const isSelected = sel.has(item.i);
+    if (isSelected && isCorrectOpt) el.classList.add('correct-sel');
+    else if (isSelected && !isCorrectOpt) { el.classList.add('wrong-sel'); allRight = false; }
+    else if (!isSelected && isCorrectOpt) { el.classList.add('missed'); allRight = false; }
+  });
+  return allRight;
+}
+
+function revealMatrix(q, sel) {
+  let allRight = true;
+  q.rows.forEach((row, ri) => {
+    const chosen = sel[ri];
+    const cols = q.type === 'matrix_ei' ? ['E','I'] : ['I','C','N'];
+    cols.forEach(c => {
+      const el = document.getElementById(`mr-${q.id}-${ri}-${c}`);
+      if (!el) return;
+      el.classList.remove('selected-ind','selected-con','selected-non','selected-eff','selected-ine');
+      el.classList.add('disabled');
+      el.onclick = null;
+      if (c === row.correct) { el.classList.add('correct-reveal'); el.innerHTML = '✓'; }
+      if (c === chosen && c !== row.correct) { el.classList.add('wrong-reveal'); el.innerHTML = '✕'; allRight = false; }
+    });
+  });
+  return allRight;
+}
+
+function revealBowtie(q, lSel, rSel, mSel) {
+  const bt = window._bt[q.id];
+  let allRight = true;
+  const lCorrect = new Set(q.left.correct);
+  const rCorrect = new Set(q.right.correct);
+  const mCorrect = new Set(q.monitor.correct);
+
+  function revealBTPanel(prefix, sel, correctSet, shuffled) {
+    shuffled.forEach(item => {
+      const el = document.getElementById(`bt-${q.id}-${prefix}-${item.i}`);
+      const ch = document.getElementById(`btch-${q.id}-${prefix}-${item.i}`);
+      if (!el) return;
+      el.classList.add('disabled');
+      el.onclick = null;
+      const isCor = correctSet.has(item.i);
+      const isSel = sel.has(item.i);
+      if (isSel && isCor) { el.classList.add('correct-reveal'); if(ch) ch.innerHTML='✓'; }
+      else if (isSel && !isCor) { el.classList.add('wrong-reveal'); if(ch) ch.innerHTML='✕'; allRight = false; }
+      else if (!isSel && isCor) { el.classList.add('correct-reveal'); if(ch) ch.innerHTML='✓'; allRight = false; }
+    });
+  }
+
+  revealBTPanel('L', lSel, lCorrect, bt.left);
+  revealBTPanel('R', rSel, rCorrect, bt.right);
+  revealBTPanel('M', mSel, mCorrect, bt.monitor);
+  return allRight;
+}
+
+function updateStats() {
+  document.getElementById('stat-answered').textContent = state.answered;
+  document.getElementById('stat-correct').textContent = state.correct;
+  document.getElementById('stat-wrong').textContent = state.incorrect;
+  document.getElementById('progress-fill').style.width = `${(state.answered/60)*100}%`;
+}
+
+function checkComplete() {
+  if (state.answered === QUESTIONS.length) {
+    const pct = Math.round((state.correct / 60) * 100);
+    document.getElementById('final-pct').textContent = `${pct}%`;
+    const pctEl = document.getElementById('final-pct');
+    if (pct >= 80) pctEl.style.color = 'var(--glow-green)';
+    else if (pct >= 65) pctEl.style.color = 'var(--glow-amber)';
+    else pctEl.style.color = 'var(--glow-red)';
+    document.getElementById('final-detail').textContent = `${state.correct} / 60 questions correct`;
+    let feedback = '';
+    if (pct >= 90) feedback = '🏆 Outstanding! You are well-prepared for your HESI/NCLEX exam.';
+    else if (pct >= 80) feedback = '✅ Strong performance. Review the questions you missed and reinforce weak areas.';
+    else if (pct >= 65) feedback = '⚠️ Passing range. Focus on reviewing medications, cardiogenic shock, and clinical judgment questions.';
+    else feedback = '📚 Keep studying! Review case studies, medication rationales, and pathophysiology connections.';
+    document.getElementById('final-feedback').textContent = feedback;
+    document.getElementById('final-score').style.display = 'block';
+    document.getElementById('final-score').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+function resetExam() {
+  // Reset state
+  state.answers = {};
+  state.correct = 0;
+  state.incorrect = 0;
+  state.answered = 0;
+  Object.keys(mcSelected).forEach(k => delete mcSelected[k]);
+  Object.keys(sataSelected).forEach(k => delete sataSelected[k]);
+  Object.keys(matrixSelected).forEach(k => delete matrixSelected[k]);
+  Object.keys(btSelected).forEach(k => delete btSelected[k]);
+  Object.keys(shuffledMC).forEach(k => delete shuffledMC[k]);
+  Object.keys(shuffledSATA).forEach(k => delete shuffledSATA[k]);
+  if (window._bt) Object.keys(window._bt).forEach(k => delete window._bt[k]);
+
+  document.getElementById('final-score').style.display = 'none';
+  updateStats();
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+render();
+</script>
+</body>
+</html>

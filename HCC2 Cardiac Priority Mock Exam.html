@@ -1,0 +1,2533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HCC2 Cardiac Perfusion Mock Exam</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060a12;
+    --surface: #0d1520;
+    --surface2: #111c2e;
+    --border: #1e3050;
+    --accent: #e63946;
+    --accent2: #ff6b6b;
+    --cyan: #00d4ff;
+    --gold: #f4a261;
+    --green: #2ec4b6;
+    --text: #c8d8e8;
+    --text-dim: #607090;
+    --text-bright: #e8f4ff;
+    --correct: #2ec4b6;
+    --incorrect: #e63946;
+    --indicated: #2ec4b6;
+    --contraindicated: #e63946;
+    --nonessential: #f4a261;
+    --effective: #2ec4b6;
+    --ineffective: #e63946;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ECG Background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: 
+      radial-gradient(ellipse at 20% 50%, rgba(230,57,70,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(0,212,255,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 80%, rgba(46,196,182,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Grid overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: 
+      linear-gradient(rgba(30,48,80,0.3) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30,48,80,0.3) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* HEADER */
+  .header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(6,10,18,0.95);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    padding: 0 2rem;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .heart-icon {
+    width: 36px;
+    height: 36px;
+    animation: heartbeat 1.2s ease-in-out infinite;
+  }
+
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    15% { transform: scale(1.15); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.08); }
+    60% { transform: scale(1); }
+  }
+
+  .header-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--text-bright);
+    text-transform: uppercase;
+  }
+
+  .header-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .stat-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .stat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .stat-value {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--cyan);
+  }
+
+  .progress-bar-wrap {
+    width: 180px;
+  }
+
+  .progress-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--cyan));
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  /* ECG Line in header */
+  .ecg-line {
+    width: 120px;
+    height: 32px;
+  }
+
+  /* MAIN */
+  main {
+    position: relative;
+    z-index: 1;
+    padding-top: 64px;
+    min-height: 100vh;
+  }
+
+  /* SPLASH SCREEN */
+  #splash {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 64px);
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .splash-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    padding: 0.4rem 1rem;
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+  }
+
+  .splash-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 700;
+    line-height: 0.95;
+    color: var(--text-bright);
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+  }
+
+  .splash-title span {
+    color: var(--accent);
+  }
+
+  .splash-subtitle {
+    font-family: 'Barlow', sans-serif;
+    font-size: 1rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    margin-bottom: 3rem;
+  }
+
+  .splash-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 3rem;
+    max-width: 600px;
+    width: 100%;
+  }
+
+  .splash-stat {
+    background: var(--surface);
+    padding: 1.5rem 1rem;
+    text-align: center;
+  }
+
+  .splash-stat-num {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--cyan);
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+
+  .splash-stat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .priority-panel {
+    max-width: 600px;
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 1.5rem;
+    margin-bottom: 3rem;
+    text-align: left;
+  }
+
+  .priority-panel h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .priority-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .priority-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .priority-num {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 1rem;
+    width: 20px;
+    flex-shrink: 0;
+  }
+
+  .start-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    padding: 1rem 3rem;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .start-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transition: left 0.4s;
+  }
+
+  .start-btn:hover::before { left: 100%; }
+  .start-btn:hover { background: #c1121f; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(230,57,70,0.4); }
+
+  /* QUESTION SCREEN */
+  #exam-screen {
+    display: none;
+    padding: 2rem;
+    max-width: 960px;
+    margin: 0 auto;
+    padding-top: 3rem;
+  }
+
+  .question-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+  }
+
+  .q-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .q-number {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+  }
+
+  .q-type-badge {
+    display: inline-block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    padding: 0.25rem 0.6rem;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+
+  .badge-mc { background: rgba(0,212,255,0.1); color: var(--cyan); border: 1px solid rgba(0,212,255,0.3); }
+  .badge-sata { background: rgba(244,162,97,0.1); color: var(--gold); border: 1px solid rgba(244,162,97,0.3); }
+  .badge-matrix { background: rgba(46,196,182,0.1); color: var(--green); border: 1px solid rgba(46,196,182,0.3); }
+  .badge-bowtie { background: rgba(230,57,70,0.1); color: var(--accent2); border: 1px solid rgba(230,57,70,0.3); }
+  .badge-priority { background: rgba(230,57,70,0.15); color: var(--accent); border: 1px solid rgba(230,57,70,0.4); }
+  .badge-delegate { background: rgba(244,162,97,0.1); color: var(--gold); border: 1px solid rgba(244,162,97,0.3); }
+  .badge-chart { background: rgba(0,212,255,0.1); color: var(--cyan); border: 1px solid rgba(0,212,255,0.3); }
+
+  .case-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--cyan);
+    border-radius: 4px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+
+  .case-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  .vitals-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 8px;
+    margin-top: 1rem;
+  }
+
+  .vital-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .vital-name {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.58rem;
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .vital-val {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-top: 2px;
+  }
+
+  .vital-val.abnormal { color: var(--accent); }
+
+  .q-stem {
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--text-bright);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+
+  /* ANSWER OPTIONS */
+  .options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .option-btn {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    width: 100%;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--cyan);
+    background: rgba(0,212,255,0.05);
+    color: var(--text-bright);
+  }
+
+  .option-btn.selected {
+    border-color: var(--cyan);
+    background: rgba(0,212,255,0.08);
+    color: var(--text-bright);
+  }
+
+  .option-btn.correct {
+    border-color: var(--correct);
+    background: rgba(46,196,182,0.1);
+    color: #7fffd4;
+  }
+
+  .option-btn.incorrect {
+    border-color: var(--incorrect);
+    background: rgba(230,57,70,0.08);
+    color: #ff9999;
+  }
+
+  .option-btn.reveal-correct {
+    border-color: var(--correct);
+    background: rgba(46,196,182,0.06);
+  }
+
+  .option-key {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    flex-shrink: 0;
+    margin-top: 2px;
+    width: 20px;
+  }
+
+  /* MATRIX QUESTION */
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .matrix-table th {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 0.75rem 1rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-align: center;
+    color: var(--text-bright);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+  }
+
+  .matrix-table td {
+    border: 1px solid var(--border);
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+  }
+
+  .matrix-table tr:hover td { background: rgba(0,212,255,0.02); }
+
+  .matrix-row-label {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: var(--text);
+  }
+
+  .matrix-cell {
+    text-align: center;
+  }
+
+  .matrix-radio {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+    display: block;
+    margin: 0 auto;
+  }
+
+  .matrix-radio:hover { border-color: var(--cyan); }
+  .matrix-radio:checked { border-color: var(--cyan); background: var(--cyan); }
+  .matrix-radio:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 6px; height: 6px;
+    background: var(--bg);
+    border-radius: 50%;
+  }
+
+  .matrix-radio.correct-choice { border-color: var(--correct); background: var(--correct); }
+  .matrix-radio.wrong-choice { border-color: var(--incorrect); background: rgba(230,57,70,0.3); }
+
+  /* 3-column matrix (Indicated / Contraindicated / Non-Essential) */
+  .th-indicated { color: var(--indicated) !important; }
+  .th-contraindicated { color: var(--contraindicated) !important; }
+  .th-nonessential { color: var(--nonessential) !important; }
+  .th-effective { color: var(--effective) !important; }
+  .th-ineffective { color: var(--ineffective) !important; }
+
+  /* BOWTIE */
+  .bowtie-container {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    align-items: start;
+  }
+
+  .bowtie-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1rem;
+  }
+
+  .bowtie-panel-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .bowtie-panel-title.causes { color: var(--accent); }
+  .bowtie-panel-title.actions { color: var(--gold); }
+  .bowtie-panel-title.assessment { color: var(--cyan); }
+
+  .bowtie-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding-top: 2rem;
+  }
+
+  .bowtie-diamond {
+    width: 80px;
+    height: 80px;
+    background: rgba(230,57,70,0.1);
+    border: 2px solid var(--accent);
+    transform: rotate(45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .bowtie-diamond-inner {
+    transform: rotate(-45deg);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.55rem;
+    color: var(--accent);
+    text-align: center;
+    letter-spacing: 0.08em;
+    line-height: 1.4;
+  }
+
+  .bowtie-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    transition: border-color 0.2s;
+  }
+
+  .bowtie-select:hover { border-color: var(--cyan); }
+  .bowtie-select option { background: var(--surface2); }
+
+  /* SUBMIT */
+  .submit-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.85rem 2.5rem;
+    background: transparent;
+    color: var(--accent);
+    border: 2px solid var(--accent);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .submit-btn:hover {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 0 20px rgba(230,57,70,0.4);
+  }
+
+  .next-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.85rem 2.5rem;
+    background: var(--cyan);
+    color: var(--bg);
+    border: 2px solid var(--cyan);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: none;
+  }
+
+  .next-btn:hover {
+    background: #00b8e0;
+    box-shadow: 0 0 20px rgba(0,212,255,0.4);
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  /* RATIONALE */
+  .rationale-box {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    border-radius: 4px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .rationale-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .rationale-correct {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--correct);
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+  }
+
+  .rationale-text {
+    font-size: 0.9rem;
+    line-height: 1.8;
+    color: var(--text);
+  }
+
+  .rationale-text strong { color: var(--text-bright); }
+
+  .wrong-explain {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--text-dim);
+  }
+
+  .wrong-explain strong { color: var(--accent2); }
+
+  /* SCORE SCREEN */
+  #score-screen {
+    display: none;
+    padding: 2rem;
+    max-width: 960px;
+    margin: 0 auto;
+    padding-top: 4rem;
+  }
+
+  .score-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3rem;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .score-big {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 6rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--cyan);
+    margin-bottom: 0.5rem;
+  }
+
+  .score-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+
+  .score-grade {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+  }
+
+  .restart-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 1rem 2.5rem;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    margin-top: 1.5rem;
+    transition: all 0.2s;
+  }
+
+  .restart-btn:hover { background: #c1121f; }
+
+  /* SATA instruction */
+  .sata-note {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--gold);
+    letter-spacing: 0.12em;
+    margin-bottom: 1rem;
+    padding: 0.4rem 0.75rem;
+    background: rgba(244,162,97,0.08);
+    border: 1px solid rgba(244,162,97,0.2);
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  /* Review table */
+  .review-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  .review-table th {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: var(--text-bright);
+  }
+
+  .review-table td {
+    border: 1px solid var(--border);
+    padding: 0.6rem 0.75rem;
+    vertical-align: middle;
+  }
+
+  .r-correct { color: var(--correct); }
+  .r-incorrect { color: var(--incorrect); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+  /* ECG SVG animation */
+  .ecg-svg-line {
+    stroke-dasharray: 300;
+    stroke-dashoffset: 300;
+    animation: ecgDraw 2s linear infinite;
+  }
+
+  @keyframes ecgDraw {
+    0% { stroke-dashoffset: 300; }
+    100% { stroke-dashoffset: -300; }
+  }
+
+  /* Pulse dot */
+  .pulse-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulseDot 1.2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  @media (max-width: 700px) {
+    .bowtie-container { grid-template-columns: 1fr; }
+    .splash-stats { grid-template-columns: repeat(2, 1fr); }
+    .header-right { display: none; }
+    .vitals-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <svg class="heart-icon" viewBox="0 0 36 36" fill="none">
+      <path d="M18 31s-13-8.5-13-17A8 8 0 0118 8.5 8 8 0 0131 14c0 8.5-13 17-13 17z" fill="var(--accent)" opacity="0.9"/>
+    </svg>
+    <div>
+      <div class="header-title">HCC2 Cardiac Perfusion</div>
+      <div class="header-sub">NCLEX APPLICATION EXAM // MODULE II</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <svg class="ecg-line" viewBox="0 0 120 32">
+      <polyline class="ecg-svg-line" points="0,16 15,16 20,16 25,4 30,28 35,16 40,16 55,16 60,4 65,28 70,16 85,16 90,4 95,28 100,16 120,16"
+        stroke="var(--accent)" stroke-width="1.5" fill="none"/>
+    </svg>
+    <div class="stat-chip">
+      <span class="stat-label">Question</span>
+      <span class="stat-value" id="hdr-q">—</span>
+    </div>
+    <div class="stat-chip">
+      <span class="stat-label">Score</span>
+      <span class="stat-value" id="hdr-score">—</span>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-label">
+        <span>Progress</span>
+        <span id="hdr-pct">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main>
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-badge">⚡ Priority Framework Active</div>
+  <div class="splash-title">Cardiac<br><span>Perfusion</span></div>
+  <div class="splash-subtitle">HCC2 Mock Exam — Module II // 60 NCLEX-Level Questions</div>
+
+  <div class="splash-stats">
+    <div class="splash-stat">
+      <div class="splash-stat-num">60</div>
+      <div class="splash-stat-label">Questions</div>
+    </div>
+    <div class="splash-stat">
+      <div class="splash-stat-num">5</div>
+      <div class="splash-stat-label">Types</div>
+    </div>
+    <div class="splash-stat">
+      <div class="splash-stat-num">A+</div>
+      <div class="splash-stat-label">Rigor</div>
+    </div>
+    <div class="splash-stat">
+      <div class="splash-stat-num">NGN</div>
+      <div class="splash-stat-label">Format</div>
+    </div>
+  </div>
+
+  <div class="priority-panel">
+    <h3>🚨 Priority Framework — Think in This Order</h3>
+    <div class="priority-list">
+      <div class="priority-item"><span class="priority-num">1</span> Airway</div>
+      <div class="priority-item"><span class="priority-num">2</span> Breathing</div>
+      <div class="priority-item"><span class="priority-num">3</span> Circulation</div>
+      <div class="priority-item"><span class="priority-num">4</span> Perfusion to Organs</div>
+      <div class="priority-item"><span class="priority-num">5</span> Safety</div>
+    </div>
+  </div>
+
+  <button class="start-btn" onclick="startExam()">BEGIN EXAM →</button>
+</div>
+
+<!-- EXAM -->
+<div id="exam-screen">
+  <div class="question-header">
+    <div class="q-meta">
+      <div class="q-number" id="q-number-display">QUESTION 01 / 60</div>
+      <div id="q-type-badge"></div>
+    </div>
+    <div class="pulse-dot"></div>
+  </div>
+
+  <div id="case-area"></div>
+
+  <div class="q-stem" id="q-stem"></div>
+  <div id="sata-note-area"></div>
+  <div id="answer-area"></div>
+
+  <div class="btn-row">
+    <button class="submit-btn" id="submit-btn" onclick="submitAnswer()">Submit Answer</button>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next Question →</button>
+  </div>
+
+  <div class="rationale-box" id="rationale-box">
+    <div class="rationale-label">
+      <span>📋</span> Clinical Rationale
+    </div>
+    <div class="rationale-correct" id="rationale-correct"></div>
+    <div class="rationale-text" id="rationale-text"></div>
+    <div class="wrong-explain" id="wrong-explain"></div>
+  </div>
+</div>
+
+<!-- SCORE -->
+<div id="score-screen">
+  <div class="score-card">
+    <div class="score-big" id="final-score-num">0%</div>
+    <div class="score-label">Final Score</div>
+    <div class="score-grade" id="final-grade"></div>
+    <p style="color:var(--text-dim);font-size:0.9rem;margin-top:0.5rem" id="final-msg"></p>
+    <button class="restart-btn" onclick="restartExam()">Restart Exam</button>
+  </div>
+  <table class="review-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Topic</th>
+        <th>Type</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody id="review-tbody"></tbody>
+  </table>
+</div>
+</main>
+
+<script>
+// ==============================
+// QUESTION BANK — 60 Questions
+// ==============================
+
+const QUESTIONS = [
+
+// ─── Q1 ─────────────────────────────────────────────────────────────────────
+{
+  type:'priority',
+  topic:'Asthma Exacerbation',
+  stem:'A nurse is caring for a 28-year-old client with acute asthma who is using accessory muscles to breathe and reports being unable to speak in full sentences. SpO₂ is 88% on 2L nasal cannula. Which action should the nurse take FIRST?',
+  options:[
+    'Notify the health care provider of the client\'s status',
+    'Administer nebulized albuterol as ordered',
+    'Sit the client in high Fowler\'s position and apply high-flow oxygen',
+    'Obtain IV access and prepare for IV corticosteroid administration',
+    'Document the change in respiratory status in the chart'
+  ],
+  correct:[2],
+  rationale:'The priority framework: Airway → Breathing first. The client is hypoxic (SpO₂ 88%) and in respiratory distress. Positioning in high Fowler\'s maximizes diaphragmatic excursion and applying high-flow oxygen addresses the immediate threat. All other actions are secondary to establishing oxygenation.',
+  wrongExplain:'<strong>Notifying the provider</strong> and <strong>albuterol</strong> are important but not the FIRST action — airway/oxygenation positioning takes immediate priority. <strong>IV access</strong> and <strong>documentation</strong> come after stabilizing oxygenation.'
+},
+
+// ─── Q2 ─────────────────────────────────────────────────────────────────────
+{
+  type:'sata',
+  topic:'Asthma — Emergency Escalation',
+  stem:'A nurse is monitoring a client admitted for status asthmaticus. Which assessment findings require the nurse to call for rapid response? Select all that apply.',
+  options:[
+    'Silent chest on auscultation',
+    'SpO₂ declining from 93% to 87% despite high-flow oxygen',
+    'Client states they feel slightly fatigued',
+    'Respiratory rate of 18 breaths/minute',
+    'PaCO₂ rising from 38 to 52 mmHg',
+    'Client is able to speak in 4-word phrases'
+  ],
+  correct:[0,1,2,4],
+  rationale:'<strong>Silent chest</strong> indicates no air movement — impending arrest. <strong>Declining SpO₂ despite O₂</strong> signals treatment failure. <strong>Fatigue/drowsiness</strong> in asthma indicates respiratory muscle exhaustion — a pre-arrest sign. <strong>Rising PaCO₂</strong> (CO₂ retention) in an asthma patient means they can no longer compensate — ventilatory failure is imminent.',
+  wrongExplain:'<strong>RR 18</strong> is normal. <strong>4-word phrases</strong> is not full sentences but is not a rapid response trigger; full inability to speak or increasing fatigue triggers escalation.'
+},
+
+// ─── Q3 ─────────────────────────────────────────────────────────────────────
+{
+  type:'matrix3',
+  topic:'Asthma — Plan of Care',
+  stem:'The provider has evaluated a client with acute asthma exacerbation. For each nursing action below, indicate whether it is Indicated, Contraindicated, or Non-Essential.',
+  rows:[
+    'Administer prescribed nebulized albuterol every 20 minutes',
+    'Position client supine with bed flat to promote rest',
+    'Monitor ABGs and breath sounds every 1–2 hours',
+    'Encourage the client to drink cold ice water to soothe throat',
+    'Administer prescribed IV methylprednisolone',
+    'Prepare intubation equipment at bedside for status asthmaticus'
+  ],
+  correctCols:['indicated','contraindicated','indicated','nonessential','indicated','indicated'],
+  rationale:'<strong>Albuterol nebulization</strong>: bronchodilation priority. <strong>Supine position</strong>: contraindicated — worsens dyspnea; high Fowler\'s required. <strong>ABG monitoring</strong>: essential for detecting CO₂ retention. <strong>Ice water</strong>: non-essential, not harmful but irrelevant to treatment. <strong>IV steroids</strong>: reduce airway inflammation. <strong>Intubation prep</strong>: status asthmaticus may progress to respiratory failure.'
+},
+
+// ─── Q4 ─────────────────────────────────────────────────────────────────────
+{
+  type:'matrix2',
+  topic:'Asthma — Intervention Effectiveness',
+  stem:'It is 2 hours after the nurse implemented the asthma plan of care. For each reassessment finding, indicate whether interventions were Effective or Ineffective.',
+  rows:[
+    'SpO₂ improved from 88% to 96% on supplemental oxygen',
+    'Client reports persistent inability to complete a full sentence',
+    'Breath sounds reveal bilateral wheezing, reduced from before',
+    'PaCO₂ remains elevated at 54 mmHg',
+    'Client is sitting upright and using accessory muscles less'
+  ],
+  correctCols:['effective','ineffective','effective','ineffective','effective'],
+  rationale:'SpO₂ ≥ 94% is the target — improvement indicates effective oxygen delivery. <strong>Persistent inability to speak</strong> = continued distress = ineffective. <strong>Reduced wheezing</strong> indicates some bronchodilation occurring. <strong>Elevated PaCO₂</strong> = persistent CO₂ retention = ineffective ventilation. <strong>Reduced accessory muscle use</strong> = less work of breathing = effective.'
+},
+
+// ─── Q5 ─────────────────────────────────────────────────────────────────────
+{
+  type:'sata',
+  topic:'ACS — Immediate Action',
+  stem:'A nurse in the ED is caring for a 58-year-old male who reports sudden onset crushing chest pain radiating to his left jaw, diaphoresis, and nausea. Vital signs: BP 148/92, HR 98, RR 22, SpO₂ 91%. Which nursing actions should the nurse take? Select all that apply.',
+  options:[
+    'Place the client on a cardiac monitor immediately',
+    'Administer aspirin 325 mg PO to chew',
+    'Obtain a 12-lead ECG within 10 minutes',
+    'Apply oxygen via nasal cannula — titrate to SpO₂ ≥ 94%',
+    'Establish IV access',
+    'Allow the client to ambulate to the restroom if needed',
+    'Elevate the head of bed and provide warm blanket'
+  ],
+  correct:[0,1,2,3,4],
+  rationale:'The MONA protocol (Morphine, Oxygen, Nitrates, Aspirin) guides ACS management. All five actions are priorities: <strong>cardiac monitoring</strong> detects dysrhythmias, <strong>aspirin</strong> inhibits platelet aggregation, <strong>ECG within 10 min</strong> is the standard benchmark, <strong>O₂</strong> addresses hypoxia (SpO₂ 91%), and <strong>IV access</strong> is needed for medications. SpO₂ 91% meets the threshold for oxygen administration.',
+  wrongExplain:'<strong>Ambulation</strong> is contraindicated — activity increases myocardial oxygen demand. <strong>Warm blanket/HOB</strong> is comfort but not a priority intervention in ACS.'
+},
+
+// ─── Q6 ─────────────────────────────────────────────────────────────────────
+{
+  type:'sata',
+  topic:'ACS — Nitroglycerin Contraindications',
+  stem:'A nurse is preparing to administer nitroglycerin 0.4 mg sublingual to a client reporting chest pain. Which assessment findings would require the nurse to HOLD the medication and notify the provider? Select all that apply.',
+  options:[
+    'Heart rate of 88 bpm',
+    'Client reports a mild headache',
+    'Blood pressure of 88/54 mmHg',
+    'SpO₂ of 93% on room air',
+    'Client took sildenafil (Viagra) 36 hours ago'
+  ],
+  correct:[2,4],
+  rationale:'<strong>BP of 88/54</strong> is hypotension — nitroglycerin is a vasodilator that further drops blood pressure, risking cardiovascular collapse. Hold and notify immediately. <strong>Sildenafil within 24–48 hours</strong> is an absolute contraindication — both sildenafil (PDE-5 inhibitor) and nitroglycerin cause vasodilation; the combination causes severe, potentially fatal hypotension.',
+  wrongExplain:'<strong>HR 88</strong>: normal — not a contraindication. <strong>Mild headache</strong>: actually an expected side effect of nitroglycerin (cerebral vasodilation) — not a reason to hold. <strong>SpO₂ 93%</strong>: monitor, but not a contraindication to nitro.'
+},
+
+// ─── Q7 ─────────────────────────────────────────────────────────────────────
+{
+  type:'bowtie',
+  topic:'ACS — Bowtie Clinical Reasoning',
+  stem:'A 62-year-old is admitted with ST-elevation MI. Complete the bowtie clinical reasoning.',
+  centerLabel:'STEMI',
+  causeOptions:['Coronary artery occlusion by thrombus','Hypokalemia','Fluid overload','Excessive vagal tone'],
+  causeCorrect:['Coronary artery occlusion by thrombus'],
+  actionOptions:['Administer aspirin and prepare for PCI','Elevate legs above heart level','Apply ice pack to chest','Administer IV furosemide immediately'],
+  actionCorrect:['Administer aspirin and prepare for PCI'],
+  assessOptions:['Resolution of ST elevation on repeat ECG','Improvement in urine output','Decreased BUN level','Improved respiratory rate'],
+  assessCorrect:['Resolution of ST elevation on repeat ECG'],
+  rationale:'STEMI is caused by complete occlusion of a coronary artery by a thrombus. The priority action is administering aspirin (antiplatelet) and preparing for percutaneous coronary intervention (PCI) — the gold standard to restore perfusion within 90 minutes. Effectiveness is measured by ST-segment resolution on repeat ECG, indicating reperfusion of the myocardium.'
+},
+
+// ─── Q8 ─────────────────────────────────────────────────────────────────────
+{
+  type:'mc',
+  topic:'Post-Cath Care',
+  stem:'A nurse is caring for a client who returned from cardiac catheterization via the right femoral artery 45 minutes ago. The nurse assesses the right lower extremity and finds the foot to be cool, pale, and without a palpable dorsalis pedis pulse. What is the nurse\'s priority action?',
+  options:[
+    'Apply a warm compress to the right foot',
+    'Document the finding and continue to monitor',
+    'Notify the provider immediately — this is a circulatory emergency',
+    'Elevate the right leg above heart level',
+    'Ask the client about their pain level in the foot'
+  ],
+  correct:[2],
+  rationale:'Absent distal pulse + pale cool extremity post-cardiac catheterization indicates arterial occlusion at the access site — a vascular emergency. The nurse must immediately notify the provider. Time is tissue: delayed intervention risks limb loss. This is a "call immediately" finding.',
+  wrongExplain:'<strong>Warm compress</strong>: contraindicated — could worsen bleeding or mask ischemia. <strong>Document and monitor</strong>: delays critical intervention. <strong>Elevation</strong>: incorrect — post-cath the extremity should be kept flat/extended. <strong>Pain assessment</strong>: important but not before calling the provider.'
+},
+
+// ─── Q9 ─────────────────────────────────────────────────────────────────────
+{
+  type:'matrix3',
+  topic:'Post-Cath — Nursing Actions',
+  stem:'A client has just returned to the unit after femoral cardiac catheterization. For each nursing action, indicate whether it is Indicated, Contraindicated, or Non-Essential.',
+  rows:[
+    'Assess distal pulses, skin color, and cap refill every 15 minutes initially',
+    'Encourage the client to flex and bend the affected knee to prevent DVT',
+    'Monitor the access site for hematoma formation',
+    'Apply a pressure dressing to the femoral puncture site',
+    'Encourage oral fluids to flush contrast dye from kidneys',
+    'Place a pillow under the client\'s knees for comfort'
+  ],
+  correctCols:['indicated','contraindicated','indicated','indicated','indicated','nonessential'],
+  rationale:'<strong>Distal pulse checks q15min</strong>: essential to detect arterial compromise early. <strong>Knee flexion</strong>: contraindicated — the extremity must remain straight for 2–6 hours to prevent arterial rebleeding. <strong>Hematoma monitoring</strong>: essential. <strong>Pressure dressing</strong>: essential to prevent hemorrhage. <strong>Oral fluids</strong>: indicated to clear nephrotoxic contrast. <strong>Pillow under knees</strong>: non-essential and potentially contraindicated if it causes leg bending.'
+},
+
+// ─── Q10 ─────────────────────────────────────────────────────────────────────
+{
+  type:'priority',
+  topic:'Heart Failure — Priority Assessment',
+  stem:'The nurse is caring for four clients with heart failure. Which client requires the nurse\'s MOST IMMEDIATE attention?',
+  options:[
+    'Client A: 2+ pitting edema bilateral ankles, weight up 1 lb from yesterday',
+    'Client B: Reports orthopnea, crackles in bilateral lung bases, SpO₂ 88%',
+    'Client C: JVD noted, reports abdominal discomfort, mild shortness of breath',
+    'Client D: Reports fatigue and dyspnea on exertion with 3-flight stair climb',
+    'Client E: Daily weight up 2 lbs over 3 days, mild ankle swelling'
+  ],
+  correct:[1],
+  rationale:'Client B has acute left-sided heart failure decompensation: orthopnea, crackles (pulmonary edema), and SpO₂ 88% indicate respiratory compromise. This is immediately life-threatening. SpO₂ <90% + crackles = pulmonary edema — treat NOW with O₂, high Fowler\'s, diuretics.',
+  wrongExplain:'Clients A, C, D, E have chronic/compensated HF findings. None have acute hypoxia or pulmonary edema. Right-sided signs (JVD, edema) in Client C are concerning but not immediately life-threatening compared to Client B\'s respiratory failure.'
+},
+
+// ─── Q11 ─────────────────────────────────────────────────────────────────────
+{
+  type:'sata',
+  topic:'Left vs Right Heart Failure',
+  stem:'A nurse is assessing a client with left-sided heart failure. Which findings does the nurse expect to find? Select all that apply.',
+  options:[
+    'Crackles in the lung bases bilaterally',
+    'Pink frothy sputum',
+    'Jugular venous distension (JVD)',
+    'Orthopnea',
+    'Dependent pitting edema in lower extremities',
+    'Dyspnea on exertion',
+    'Ascites and hepatomegaly'
+  ],
+  correct:[0,1,3,5],
+  rationale:'Left-sided HF causes backup into the pulmonary circulation. Hallmarks: <strong>crackles</strong> (fluid in alveoli), <strong>pink frothy sputum</strong> (severe pulmonary edema), <strong>orthopnea</strong> (dyspnea lying flat), and <strong>dyspnea on exertion</strong>.',
+  wrongExplain:'<strong>JVD, dependent edema, ascites, hepatomegaly</strong> are right-sided HF findings — caused by backup into the systemic venous circulation. These two failure types often coexist but have distinct early presentations.'
+},
+
+// ─── Q12 ─────────────────────────────────────────────────────────────────────
+{
+  type:'matrix2',
+  topic:'Heart Failure — Treatment Effectiveness',
+  stem:'A client with acute decompensated heart failure received IV furosemide 40 mg. Indicate whether each reassessment finding reflects Effective or Ineffective treatment.',
+  rows:[
+    'Urine output 800 mL in 4 hours after dose',
+    'Weight decreased 2 lbs from morning weight',
+    'Crackles persist bilaterally and unchanged',
+    'Serum potassium decreased from 3.9 to 3.2 mEq/L',
+    'Client reports improved ability to breathe in supine position',
+    'SpO₂ improved from 88% to 95%'
+  ],
+  correctCols:['effective','effective','ineffective','ineffective','effective','effective'],
+  rationale:'Furosemide goal: <strong>reduce fluid overload</strong>. Effective signs: increased urine output, weight loss, improved SpO₂, resolved orthopnea. <strong>Persistent crackles</strong> = fluid not clearing = ineffective. <strong>Hypokalemia</strong> (K+ 3.2) = adverse effect of loop diuretic requiring monitoring and potential replacement.'
+},
+
+// ─── Q13 ─────────────────────────────────────────────────────────────────────
+{
+  type:'mc',
+  topic:'Digoxin Safety',
+  stem:'The nurse is preparing to administer digoxin 0.125 mg PO to a client with chronic heart failure. Which assessment finding requires the nurse to hold the medication and contact the provider?',
+  options:[
+    'BP 126/78 mmHg',
+    'Heart rate 54 bpm with report of nausea, yellow-green halos in vision',
+    'Potassium level 4.1 mEq/L',
+    'Client reports mild headache',
+    'Respiratory rate 16 breaths/min'
+  ],
+  correct:[1],
+  rationale:'HR <60, nausea, and yellow-green visual halos are classic signs of <strong>digoxin toxicity</strong>. The medication must be held immediately. Digoxin has a narrow therapeutic index; toxicity is potentiated by hypokalemia and renal impairment.',
+  wrongExplain:'<strong>BP and K+ normal</strong>: no hold required. <strong>Headache</strong>: non-specific. <strong>RR 16</strong>: normal. The combination of bradycardia + GI symptoms + visual changes = toxicity until proven otherwise.'
+},
+
+// ─── Q14 ─────────────────────────────────────────────────────────────────────
+{
+  type:'sata',
+  topic:'Heart Failure Discharge Teaching',
+  stem:'A nurse is developing a discharge teaching plan for a client with chronic heart failure on furosemide, lisinopril, and carvedilol. Which instructions should the nurse include? Select all that apply.',
+  options:[
+    'Weigh yourself daily at the same time each morning before eating',
+    'Report a weight gain of 2 lbs in 24 hours or 5 lbs in one week to your provider',
+    'Restrict dietary sodium to less than 2,000 mg per day',
+    'Stop carvedilol if you feel dizzy when standing',
+    'Take furosemide in the morning to minimize sleep disruption',
+    'Include potassium-rich foods such as bananas and oranges in your diet',
+    'Crush lisinopril and mix with food if you have trouble swallowing'
+  ],
+  correct:[0,1,2,4,5],
+  rationale:'All correct answers represent evidence-based HF self-management: <strong>daily weights</strong> detect early fluid retention, <strong>weight gain thresholds</strong> prompt provider contact, <strong>sodium restriction</strong> reduces fluid retention, <strong>morning diuretics</strong> prevent nocturia, <strong>potassium-rich foods</strong> compensate for loop diuretic losses.',
+  wrongExplain:'<strong>Stop carvedilol for dizziness</strong>: NEVER stop beta-blockers abruptly — this can precipitate rebound hypertension or MI; contact provider instead. <strong>Crush lisinopril</strong>: not recommended — consult pharmacist; tablets should be swallowed whole.'
+},
+
+// ─── Q15 ─────────────────────────────────────────────────────────────────────
+{
+  type:'matrix2',
+  topic:'HF Discharge Teaching Effectiveness',
+  stem:'During a follow-up call, the nurse asks the client about managing their heart failure at home. For each client response, indicate whether the teaching was Effective or Ineffective.',
+  rows:[
+    '"I weigh myself every morning before I eat breakfast."',
+    '"I called my doctor when I gained 3 pounds in two days."',
+    '"I stopped taking my water pill because I was urinating too much."',
+    '"I limit my sodium intake to about 1,500–2,000 mg per day."',
+    '"I eat a banana most mornings because of my diuretic."'
+  ],
+  correctCols:['effective','effective','ineffective','effective','effective'],
+  rationale:'The client demonstrates understanding in most areas. <strong>Stopping furosemide</strong> is a critical error — diuretics are essential for fluid management and must never be stopped without provider guidance. The nurse should provide reinforcement regarding medication adherence and when to call the provider.'
+},
+
+// ─── Q16 ─────────────────────────────────────────────────────────────────────
+{
+  type:'priority',
+  topic:'Acute Pulmonary Edema',
+  stem:'A nurse enters the room of a client with known heart failure and finds the client sitting bolt upright, gasping for breath, producing pink frothy sputum, and coughing with SpO₂ 82%. Which is the nurse\'s FIRST action?',
+  options:[
+    'Call the rapid response team',
+    'Place the client in high Fowler\'s with legs dependent and apply high-flow oxygen',
+    'Administer IV furosemide as ordered',
+    'Apply CPAP as ordered',
+    'Obtain IV access and prepare nitroglycerin infusion'
+  ],
+  correct:[1],
+  rationale:'Acute pulmonary edema is a respiratory emergency. Priority: <strong>position first</strong> (high Fowler\'s with legs dangling reduces preload and improves respiratory mechanics) and simultaneously apply <strong>high-flow oxygen</strong> to address critical hypoxia (SpO₂ 82%). This is ABCs — airway and breathing before calling for help or medications.',
+  wrongExplain:'Rapid response should be called but is not the FIRST action when you can immediately intervene. IV diuretics, CPAP, and nitroglycerin follow position and oxygen in the sequence.'
+},
+
+// ─── Q17 ─────────────────────────────────────────────────────────────────────
+{
+  type:'matrix3',
+  topic:'Pulmonary Edema — Nursing Actions',
+  stem:'A client is experiencing acute pulmonary edema. For each nursing action, indicate Indicated, Contraindicated, or Non-Essential.',
+  rows:[
+    'Apply high-flow oxygen via non-rebreather mask',
+    'Position client supine to promote cardiac output',
+    'Administer IV furosemide as prescribed',
+    'Prepare nitroglycerin infusion to reduce preload',
+    'Apply continuous cardiac monitoring',
+    'Encourage the client to cough and deep breathe every 2 hours',
+    'Prepare for possible CPAP/BiPAP or intubation if unresponsive'
+  ],
+  correctCols:['indicated','contraindicated','indicated','indicated','indicated','nonessential','indicated'],
+  rationale:'<strong>High-flow O₂</strong>: critical for SpO₂. <strong>Supine position</strong>: contraindicated — worsens dyspnea and increases preload; high Fowler\'s with dangling legs required. <strong>Furosemide</strong>: reduces fluid overload. <strong>NTG</strong>: vasodilates to reduce preload. <strong>Cardiac monitoring</strong>: detect dysrhythmias. <strong>C&DB q2h</strong>: non-essential in acute phase — inappropriate to ask a drowning patient to cough. <strong>CPAP/intubation prep</strong>: essential if standard therapy fails.'
+},
+
+// ─── Q18 ─────────────────────────────────────────────────────────────────────
+{
+  type:'priority',
+  topic:'Cardiogenic Shock',
+  stem:'The nurse is caring for a client 2 hours post-MI who develops BP 76/48, HR 118 with weak thready pulse, cool clammy skin, RR 26, and urine output of 8 mL/hr. Which nursing action should the nurse prioritize FIRST?',
+  options:[
+    'Notify the provider and document vital signs',
+    'Administer prescribed IV dopamine infusion and apply high-flow oxygen',
+    'Elevate the client\'s legs to increase preload',
+    'Administer 1L normal saline IV bolus',
+    'Obtain a 12-lead ECG'
+  ],
+  correct:[1],
+  rationale:'The client is in cardiogenic shock (hypotension + signs of poor perfusion: cool clammy skin, weak pulse, oliguria). The priority is <strong>hemodynamic support with vasopressors/inotropes + oxygenation</strong>. Dopamine increases contractility and BP while oxygen supports the ischemic myocardium.',
+  wrongExplain:'<strong>Notify and document</strong>: important but not first — treat the emergency first. <strong>Leg elevation</strong>: not indicated in cardiogenic shock (may worsen pulmonary congestion). <strong>NS bolus</strong>: may worsen pulmonary edema in cardiogenic shock. <strong>ECG</strong>: important but secondary to hemodynamic support.'
+},
+
+// ─── Q19 ─────────────────────────────────────────────────────────────────────
+{
+  type:'sata',
+  topic:'Cardiogenic Shock Assessment',
+  stem:'A nurse is monitoring a client in cardiogenic shock. Which findings indicate persistent hemodynamic compromise? Select all that apply.',
+  options:[
+    'MAP of 58 mmHg',
+    'Urine output of 15 mL/hr',
+    'Altered level of consciousness — confusion',
+    'SpO₂ of 96% on 4L nasal cannula',
+    'Cool, mottled extremities',
+    'Heart rate improved to 92 bpm from 120 bpm'
+  ],
+  correct:[0,1,2,4],
+  rationale:'<strong>MAP <65</strong>: indicates inadequate perfusion pressure. <strong>UO <30 mL/hr</strong>: sign of renal hypoperfusion. <strong>Altered LOC</strong>: cerebral hypoperfusion. <strong>Cool mottled extremities</strong>: peripheral vasoconstriction and poor cardiac output.',
+  wrongExplain:'<strong>SpO₂ 96%</strong>: acceptable with supplemental O₂. <strong>HR improving to 92</strong>: may suggest response to treatment, not a sign of compromise.'
+},
+
+// ─── Q20 ─────────────────────────────────────────────────────────────────────
+{
+  type:'priority',
+  topic:'Hypertensive Crisis',
+  stem:'A nurse in the ED is caring for a 55-year-old client with a BP of 220/134 mmHg who reports severe headache, blurred vision, and right-sided arm weakness. Which action should the nurse take FIRST?',
+  options:[
+    'Administer oral antihypertensive medication as ordered',
+    'Establish IV access and begin cardiac monitoring; notify provider immediately',
+    'Drop the BP to 120/80 mmHg within 30 minutes with IV labetalol',
+    'Position client supine and obtain a 12-lead ECG',
+    'Perform a full head-to-toe assessment before intervening'
+  ],
+  correct:[1],
+  rationale:'This is hypertensive emergency with end-organ involvement (neurological deficits, vision changes, severe HA). Priority: <strong>IV access + cardiac monitoring + immediate provider notification</strong>. IV antihypertensives will be needed, but the nurse first establishes access and monitoring while alerting the team.',
+  wrongExplain:'<strong>Oral meds</strong>: too slow for hypertensive emergency. <strong>Rapid BP drop</strong>: DANGEROUS — dropping BP too fast in hypertensive emergency causes ischemic stroke; controlled gradual reduction is the goal. <strong>Supine position</strong>: appropriate for shock, but this client needs HOB elevated and neuro monitoring. <strong>Full assessment first</strong>: wrong — initiate emergency response first.'
+},
+
+// ─── Q21 ─────────────────────────────────────────────────────────────────────
+{
+  type:'sata',
+  topic:'Hypertensive Crisis Signs',
+  stem:'A nurse is screening clients for hypertensive emergency versus hypertensive urgency. Which findings indicate hypertensive EMERGENCY (end-organ damage)? Select all that apply.',
+  options:[
+    'BP 218/128 with severe occipital headache and projectile vomiting',
+    'BP 178/104 with mild headache, client asymptomatic otherwise',
+    'BP 192/116 with new onset slurred speech and facial drooping',
+    'BP 200/120 with pink frothy sputum and SpO₂ 86%',
+    'BP 185/100 with mild nausea, no neuro symptoms',
+    'BP 210/130 with serum creatinine acutely doubled from baseline'
+  ],
+  correct:[0,2,3,5],
+  rationale:'Hypertensive emergency requires end-organ damage: <strong>hypertensive encephalopathy</strong> (severe HA + vomiting), <strong>stroke symptoms</strong> (slurred speech, facial droop), <strong>acute pulmonary edema</strong> (pink frothy sputum, hypoxia), and <strong>acute kidney injury</strong> (rising creatinine) all qualify.',
+  wrongExplain:'<strong>Mild HA with BP 178 or 185</strong> without organ involvement = hypertensive urgency, not emergency. Urgency requires oral antihypertensives and close monitoring but not ICU-level intervention.'
+},
+
+// ─── Q22 ─────────────────────────────────────────────────────────────────────
+{
+  type:'mc',
+  topic:'Beta-Blocker Safety',
+  stem:'A nurse is preparing to administer metoprolol tartrate 25 mg PO to a client with hypertension. The client\'s vital signs are: BP 108/68, HR 52, RR 16. Which action should the nurse take?',
+  options:[
+    'Administer the medication as ordered — BP is only mildly low',
+    'Hold the medication, notify provider — HR is below 60 bpm',
+    'Administer half the dose to compensate for the bradycardia',
+    'Reassess in 30 minutes and administer if HR increases',
+    'Document the findings and proceed with medication administration'
+  ],
+  correct:[1],
+  rationale:'Beta-blockers should be held when HR is <strong>below 60 bpm</strong>. Metoprolol further slows heart rate and can cause significant bradycardia or heart block. The nurse holds the dose and notifies the provider per protocol.',
+  wrongExplain:'<strong>Administering anyway</strong>: unsafe — could worsen bradycardia to dangerous levels. <strong>Half dose</strong>: not a standard practice without a provider order. <strong>Reassessing</strong>: delays appropriate intervention. <strong>Document and give</strong>: inappropriate — a contraindication exists.'
+},
+
+// ─── Q23 ─────────────────────────────────────────────────────────────────────
+{
+  type:'sata',
+  topic:'ACE Inhibitor Teaching',
+  stem:'A nurse is educating a client newly prescribed lisinopril 10 mg daily for hypertension. Which points should the nurse include in the teaching plan? Select all that apply.',
+  options:[
+    'Rise slowly from sitting or lying position to prevent dizziness',
+    'A persistent dry cough is a common side effect — report if intolerable',
+    'Monitor blood pressure at home and keep a log',
+    'Avoid potassium supplements and salt substitutes containing potassium',
+    'If you develop swelling of the lips or tongue, take an antacid and monitor',
+    'Take lisinopril with a full glass of water, any time of day'
+  ],
+  correct:[0,1,2,3,5],
+  rationale:'ACE inhibitor teaching: <strong>orthostatic precautions</strong> (vasodilation causes hypotension), <strong>dry cough</strong> is a class side effect (bradykinin accumulation), <strong>home BP monitoring</strong>, <strong>potassium restriction</strong> (ACE inhibitors cause K+ retention — hyperkalemia risk), and proper administration.',
+  wrongExplain:'<strong>Lip/tongue swelling</strong> is angioedema — a life-threatening allergic reaction requiring immediate 911 call, NOT antacid. The nurse must emphasize this is an emergency and the medication must be stopped immediately.'
+},
+
+// ─── Q24 ─────────────────────────────────────────────────────────────────────
+{
+  type:'mc',
+  topic:'Loop Diuretic Monitoring',
+  stem:'A client with chronic heart failure is receiving furosemide 40 mg IV twice daily. Which laboratory value requires the nurse to contact the provider before administering the next dose?',
+  options:[
+    'Sodium 138 mEq/L',
+    'Potassium 2.8 mEq/L',
+    'Chloride 102 mEq/L',
+    'BUN 18 mg/dL',
+    'Creatinine 0.9 mg/dL'
+  ],
+  correct:[1],
+  rationale:'<strong>Potassium 2.8 mEq/L</strong> is severe hypokalemia (normal 3.5–5.0). Loop diuretics waste potassium. Hypokalemia with furosemide risks life-threatening dysrhythmias (especially in a patient on digoxin, which becomes toxic with low K+). Provider notification is required before continuing.',
+  wrongExplain:'All other values are within normal limits. Sodium 138, Chloride 102, BUN 18, Creatinine 0.9 — none require medication withholding.'
+},
+
+// ─── Q25 ─────────────────────────────────────────────────────────────────────
+{
+  type:'priority',
+  topic:'Peripheral Arterial Disease',
+  stem:'A nurse is caring for a client with peripheral arterial disease (PAD) of the lower extremities. The client reports sudden onset of severe pain in the left leg, and the nurse assesses that the left foot is pale, pulseless, and cold. Which action should the nurse take FIRST?',
+  options:[
+    'Apply a warm compress to the affected limb for comfort',
+    'Elevate the left leg above heart level on two pillows',
+    'Notify the provider immediately — this indicates acute arterial occlusion',
+    'Administer the prescribed PRN analgesic and reassess in 1 hour',
+    'Encourage ambulation to improve peripheral circulation'
+  ],
+  correct:[2],
+  rationale:'The "6 Ps" of acute limb ischemia: Pain, Pallor, Pulselessness, Paresthesia, Paralysis, Poikilothermia. Pulseless + pale + cold = acute arterial occlusion — a surgical/interventional emergency requiring immediate provider notification. Time to revascularization determines limb salvage.',
+  wrongExplain:'<strong>Warm compress</strong>: contraindicated — impairs perfusion assessment and risks burns in a poorly perfused limb. <strong>Elevation</strong>: contraindicated — worsens arterial flow (limb should be dependent). <strong>Analgesia and wait</strong>: delays critical intervention. <strong>Ambulation</strong>: contraindicated in acute ischemia.'
+},
+
+// ─── Q26 ─────────────────────────────────────────────────────────────────────
+{
+  type:'sata',
+  topic:'PAD Risk Factors & Education',
+  stem:'A nurse is educating a client newly diagnosed with peripheral arterial disease (PAD). Which topics should be included in the teaching plan? Select all that apply.',
+  options:[
+    'Smoking cessation — nicotine causes vasospasm and worsens ischemia',
+    'Inspect feet daily for sores, blisters, or color changes',
+    'Apply heating pads to feet if they feel cold',
+    'Engage in supervised walking exercise programs',
+    'Elevate the affected limb above heart level at rest',
+    'Avoid tight-fitting socks or shoes that restrict circulation',
+    'Report any new wounds on the feet that do not heal within a few days'
+  ],
+  correct:[0,1,3,5,6],
+  rationale:'PAD education: <strong>smoking cessation</strong> is the single most impactful intervention, <strong>foot inspection</strong> prevents undetected wounds, <strong>supervised walking</strong> (Buerger exercises / treadmill programs) improve collateral circulation, <strong>non-constrictive footwear</strong>, <strong>non-healing wounds</strong> signal critical limb ischemia.',
+  wrongExplain:'<strong>Heating pads</strong>: dangerous — impaired sensation means the client cannot detect burns. <strong>Elevation</strong>: contraindicated in PAD — arterial flow is gravity-dependent; the limb should be dependent or flat, not elevated.'
+},
+
+// ─── Q27 ─────────────────────────────────────────────────────────────────────
+{
+  type:'matrix3',
+  topic:'PAD vs PVD Nursing Actions',
+  stem:'A client is admitted with peripheral arterial disease. For each action, indicate whether it is Indicated, Contraindicated, or Non-Essential for PAD management.',
+  rows:[
+    'Keep the affected limb in a dependent (downward) position',
+    'Elevate both legs on pillows when resting in bed',
+    'Encourage daily walking within the client\'s tolerance',
+    'Provide meticulous daily foot care and inspection',
+    'Apply compression stockings as ordered',
+    'Teach smoking cessation strategies and refer to resources'
+  ],
+  correctCols:['indicated','contraindicated','indicated','indicated','contraindicated','indicated'],
+  rationale:'PAD management centers on <strong>improving arterial flow</strong>. <strong>Dependent positioning</strong>: gravity assists arterial flow. <strong>Elevation</strong>: contraindicated — reduces arterial flow. <strong>Walking</strong>: builds collateral circulation. <strong>Foot care</strong>: prevents ulceration. <strong>Compression stockings</strong>: contraindicated in PAD — used for venous disease, compression worsens arterial flow. <strong>Smoking cessation</strong>: most critical modifiable risk factor.'
+},
+
+// ─── Q28 ─────────────────────────────────────────────────────────────────────
+{
+  type:'mc',
+  topic:'Coronary Artery Disease Risk',
+  stem:'A nurse is assessing a 50-year-old client for coronary artery disease (CAD) risk factors. Which assessment finding most significantly increases the client\'s risk?',
+  options:[
+    'BMI of 27 and exercises 3 times per week',
+    'BP 128/82, takes daily aspirin, has a desk job',
+    'LDL 188 mg/dL, HDL 32 mg/dL, smokes 1 pack/day, father died of MI at 52',
+    'Family history of hypertension, blood glucose 102 mg/dL',
+    'Age 50 and postmenopausal status'
+  ],
+  correct:[2],
+  rationale:'This client has multiple high-impact CAD risk factors: <strong>elevated LDL</strong> (atherogenic), <strong>low HDL</strong> (<40 is protective — loss of protection), <strong>smoking</strong> (endothelial damage, vasoconstriction), and <strong>family history of premature CAD</strong> (MI in first-degree male relative under age 55). This combination represents the highest overall risk.',
+  wrongExplain:'Other options have individual risk factors, but none have the clustering of multiple major modifiable AND non-modifiable risk factors seen in Option C.'
+},
+
+// ─── Q29 ─────────────────────────────────────────────────────────────────────
+{
+  type:'sata',
+  topic:'Atherosclerosis Pathophysiology',
+  stem:'A nurse is educating a client about how atherosclerosis leads to heart disease. Which statements accurately describe this process? Select all that apply.',
+  options:[
+    'Atherosclerosis begins with damage to the endothelial lining of arteries',
+    'LDL cholesterol accumulates in the arterial wall and becomes oxidized',
+    'Plaque formation narrows the arterial lumen, reducing blood flow',
+    'HDL cholesterol contributes to plaque formation and arterial narrowing',
+    'A ruptured plaque triggers clot formation that can completely occlude the artery',
+    'Atherosclerosis primarily affects the venous system'
+  ],
+  correct:[0,1,2,4],
+  rationale:'Atherosclerosis progression: <strong>endothelial injury</strong> (from HTN, smoking, DM) → LDL infiltration and oxidation → macrophage foam cell formation → plaque (atheroma) → <strong>arterial narrowing</strong> → plaque rupture → <strong>thrombus formation</strong> → complete occlusion (MI, stroke).',
+  wrongExplain:'<strong>HDL</strong> is protective — it removes cholesterol from vessel walls (reverse transport). <strong>Veins</strong>: atherosclerosis affects arteries, not veins.'
+},
+
+// ─── Q30 ─────────────────────────────────────────────────────────────────────
+{
+  type:'mc',
+  topic:'ECG Priority Finding',
+  stem:'A nurse is reviewing a client\'s 12-lead ECG results. Which finding requires the most immediate intervention by the nurse?',
+  options:[
+    'PR interval of 0.18 seconds',
+    'QRS duration of 0.10 seconds',
+    'ST-segment elevation of 3 mm in leads II, III, and aVF',
+    'Sinus rhythm with rate of 72 bpm',
+    'T-wave inversion in V1'
+  ],
+  correct:[2],
+  rationale:'<strong>ST-segment elevation</strong> in contiguous leads = STEMI until proven otherwise. Leads II, III, aVF represent the inferior wall. This is a cardiac emergency requiring immediate provider notification, activation of the cath lab, and preparation for PCI. Goal: door-to-balloon time <90 minutes.',
+  wrongExplain:'<strong>PR 0.18</strong>: upper normal (0.12–0.20). <strong>QRS 0.10</strong>: normal (<0.12). <strong>Sinus rhythm 72</strong>: normal. <strong>T-wave inversion V1</strong>: may be normal or indicate ischemia but is not an immediate emergency.'
+},
+
+// ─── Q31 ─────────────────────────────────────────────────────────────────────
+{
+  type:'bowtie',
+  topic:'Cardiogenic Shock — Bowtie',
+  stem:'A 67-year-old develops cardiogenic shock following a large anterior MI. Complete the clinical bowtie.',
+  centerLabel:'Cardiogenic Shock',
+  causeOptions:['Left ventricular failure reducing cardiac output','Fluid volume excess from CHF','Pulmonary embolism','Sepsis from line infection'],
+  causeCorrect:['Left ventricular failure reducing cardiac output'],
+  actionOptions:['Administer high-flow O₂ and IV vasopressors/inotropes as ordered','Elevate legs and administer NS bolus 1L','Administer beta-blocker to control heart rate','Position client supine and restrict all fluids'],
+  actionCorrect:['Administer high-flow O₂ and IV vasopressors/inotropes as ordered'],
+  assessOptions:['MAP ≥65 mmHg, UO >30 mL/hr, improved mentation','Urine output decreased to 10 mL/hr','Creatinine trending upward','Heart rate remains above 120 bpm'],
+  assessCorrect:['MAP ≥65 mmHg, UO >30 mL/hr, improved mentation'],
+  rationale:'Cardiogenic shock pathophysiology: MI → LV failure → ↓CO → hypoperfusion. Treatment: inotropes (improve contractility) + vasopressors (support BP) + O₂. Effectiveness: MAP ≥65 ensures organ perfusion pressure, UO >30 mL/hr indicates renal perfusion restored, and improved mentation confirms cerebral perfusion.'
+},
+
+// ─── Q32 ─────────────────────────────────────────────────────────────────────
+{
+  type:'delegate',
+  topic:'Delegation — HF',
+  stem:'The RN is caring for a stable client with chronic heart failure who has been prescribed furosemide and digoxin. Which tasks can the RN delegate to the UAP? Select all that apply.',
+  options:[
+    'Obtain vital signs every 4 hours',
+    'Assess the client\'s bilateral breath sounds',
+    'Assist the client with morning hygiene and bathing',
+    'Measure and record urine output every shift',
+    'Administer the morning digoxin dose',
+    'Weigh the client daily before breakfast',
+    'Evaluate effectiveness of furosemide therapy'
+  ],
+  correct:[0,2,3,5],
+  rationale:'UAP can perform basic care for STABLE clients: <strong>vital signs</strong>, <strong>hygiene</strong>, <strong>I&O recording</strong>, and <strong>daily weight</strong> — all are data collection or basic care tasks that do not require clinical judgment.',
+  wrongExplain:'<strong>Breath sounds</strong>: nursing assessment — requires RN judgment. <strong>Administer digoxin</strong>: medication administration, especially high-alert meds, requires RN (or LPN per facility policy — not UAP). <strong>Evaluate effectiveness</strong>: evaluation is the RN\'s role exclusively.'
+},
+
+// ─── Q33 ─────────────────────────────────────────────────────────────────────
+{
+  type:'mc',
+  topic:'ISBAR Communication',
+  stem:'An ED nurse is transferring a client to the cardiac unit following treatment for unstable angina. The client received aspirin, nitroglycerin x2, and IV heparin. Current vitals: BP 138/86, HR 88, SpO₂ 96%. Which information is the priority to communicate in the ISBAR report?',
+  options:[
+    'The client\'s dietary preferences and family support system',
+    'The current medication name, dose, and rate of heparin infusion; last chest pain score; and current ECG findings',
+    'The client\'s insurance information and advance directive status only',
+    'Lab results from 6 months ago and previous hospitalization history',
+    'The time the client arrived to the ED and the triage nurse\'s name'
+  ],
+  correct:[1],
+  rationale:'ISBAR priority data for cardiac transfer: <strong>active IV anticoagulant</strong> (heparin — rate, concentration, last PTT), <strong>last chest pain status</strong>, and <strong>current ECG findings</strong> (any ST changes) are the highest-priority hand-off data. This ensures the receiving team can immediately continue safe anticoagulation and monitor for ischemic events.',
+  wrongExplain:'All other options contain administrative or low-priority clinical data that does not affect immediate safety of the cardiac client.'
+},
+
+// ─── Q34 ─────────────────────────────────────────────────────────────────────
+{
+  type:'mc',
+  topic:'Therapeutic Communication',
+  stem:'A client diagnosed with heart failure states: "I\'m so scared. I\'ve been taking my pills and watching my salt, but I still ended up back here. What\'s the point of trying anymore?" Which is the most therapeutic response by the nurse?',
+  options:[
+    '"Heart failure is a chronic condition that often requires multiple hospitalizations."',
+    '"Don\'t worry — we\'ll get your fluid balanced and you\'ll be home in no time."',
+    '"I hear how frustrated and scared you are. Managing heart failure is really hard. Can you tell me more about what\'s been happening at home?"',
+    '"You should keep taking your medications — stopping could be very dangerous."',
+    '"I\'ll let your doctor know you\'re feeling this way."'
+  ],
+  correct:[2],
+  rationale:'The therapeutic response uses <strong>empathic reflection</strong> and <strong>open-ended questioning</strong> — validating the client\'s feelings before gathering assessment data. This builds therapeutic alliance and uncovers barriers to adherence (social, financial, knowledge gaps).',
+  wrongExplain:'<strong>Clinical explanation</strong>: dismisses feelings with facts. <strong>"Don\'t worry"</strong>: minimizes the client\'s fear and offers false reassurance. <strong>Lecturing</strong>: non-therapeutic, places blame. <strong>"I\'ll tell the doctor"</strong>: deflects emotional support.'
+},
+
+// ─── Q35 ─────────────────────────────────────────────────────────────────────
+{
+  type:'sata',
+  topic:'Statin Therapy Education',
+  stem:'A nurse is teaching a client newly prescribed atorvastatin 40 mg for elevated LDL cholesterol. Which instructions should the nurse include? Select all that apply.',
+  options:[
+    'Take this medication in the evening for maximum effectiveness',
+    'Report unexplained muscle pain, weakness, or dark urine immediately',
+    'Avoid large amounts of grapefruit or grapefruit juice',
+    'This medication will eliminate the need for dietary changes',
+    'You may stop the medication if your cholesterol reaches target levels',
+    'Annual liver function tests may be recommended while on this medication'
+  ],
+  correct:[0,1,2,5],
+  rationale:'<strong>Evening dosing</strong>: statins are most effective when taken at night (peak cholesterol synthesis occurs overnight — though atorvastatin has long half-life, evening dosing is still standard). <strong>Muscle symptoms</strong>: rhabdomyolysis warning — dark urine = myoglobinuria. <strong>Grapefruit</strong>: inhibits CYP3A4, increasing statin levels and toxicity risk. <strong>LFTs</strong>: hepatotoxicity monitoring.',
+  wrongExplain:'<strong>"No dietary changes needed"</strong>: false — diet and lifestyle modification are essential adjuncts. <strong>"Stop at target"</strong>: statins are typically lifelong therapy; stopping allows LDL to rise again. Provider must direct any changes.'
+},
+
+// ─── Q36 ─────────────────────────────────────────────────────────────────────
+{
+  type:'priority',
+  topic:'Priority — Multiple Patients',
+  stem:'A charge nurse is receiving shift report on four cardiac unit clients. Which client should the nurse assess FIRST?',
+  options:[
+    'Client A: HTN, BP 148/90, mild HA, alert and oriented',
+    'Client B: Stable angina, scheduled stress test this morning, anxious',
+    'Client C: HF, reports new onset sudden dyspnea, SpO₂ dropped from 96% to 87% in the last 30 minutes',
+    'Client D: Post-MI day 2, HR 88, BP 130/80, eating breakfast'
+  ],
+  correct:[2],
+  rationale:'Client C is in acute respiratory distress — SpO₂ 87% with sudden dyspnea in a heart failure patient signals acute pulmonary edema or PE. This is the highest acuity and most life-threatening. SpO₂ <90% with sudden onset = immediate intervention.',
+  wrongExplain:'Client A is hypertensive but stable and neuro-intact. Client B\'s anxiety is not a physiological emergency. Client D is recovering normally from MI with stable vitals.'
+},
+
+// ─── Q37 ─────────────────────────────────────────────────────────────────────
+{
+  type:'matrix3',
+  topic:'Nitroglycerin Administration Matrix',
+  stem:'A client with chest pain is ordered nitroglycerin 0.4 mg SL q5 min x3 PRN. For each scenario, indicate whether administering the next nitroglycerin dose is Indicated, Contraindicated, or Non-Essential.',
+  rows:[
+    'Client reports chest pain 6/10 persisting after first dose; BP 118/72',
+    'Client\'s BP has dropped to 82/50 after first dose; HR 112',
+    'Client reports complete pain relief after first dose; BP 124/76',
+    'Client took sildenafil (Viagra) approximately 12 hours ago',
+    'Client reports pain 4/10 after second dose; BP 104/68'
+  ],
+  correctCols:['indicated','contraindicated','nonessential','contraindicated','indicated'],
+  rationale:'<strong>Persistent pain + acceptable BP</strong>: give next dose. <strong>Hypotension (BP 82/50)</strong>: contraindicated — nitro worsens hypotension. <strong>Complete relief</strong>: non-essential to give another dose. <strong>Sildenafil within 24h</strong>: absolute contraindication. <strong>Partial relief + BP 104/68</strong>: indicated but monitor closely for further hypotension — BP still acceptable.'
+},
+
+// ─── Q38 ─────────────────────────────────────────────────────────────────────
+{
+  type:'mc',
+  topic:'Heparin Monitoring',
+  stem:'A client with STEMI is receiving IV unfractionated heparin infusion. Which laboratory test does the nurse use to monitor the therapeutic effectiveness of heparin therapy?',
+  options:[
+    'INR (International Normalized Ratio)',
+    'Platelet count',
+    'aPTT (activated Partial Thromboplastin Time)',
+    'Fibrinogen level',
+    'Anti-Xa level'
+  ],
+  correct:[2],
+  rationale:'<strong>aPTT</strong> monitors unfractionated heparin therapy. Therapeutic range: 60–100 seconds (1.5–2.5x normal). The nurse monitors aPTT per protocol (typically q6h) to ensure therapeutic anticoagulation without bleeding risk.',
+  wrongExplain:'<strong>INR</strong>: monitors warfarin (Vitamin K antagonist). <strong>Platelet count</strong>: screens for heparin-induced thrombocytopenia (HIT) — monitored but not for efficacy. <strong>Fibrinogen</strong>: assesses clotting factor levels. <strong>Anti-Xa</strong>: monitors LMWH (e.g., enoxaparin), not unfractionated heparin.'
+},
+
+// ─── Q39 ─────────────────────────────────────────────────────────────────────
+{
+  type:'sata',
+  topic:'Heparin-Induced Thrombocytopenia',
+  stem:'A nurse is caring for a client on IV heparin who was started on the infusion 7 days ago. The nurse notes the platelet count has dropped from 220,000 to 76,000/mcL. Which nursing actions are appropriate? Select all that apply.',
+  options:[
+    'Continue the heparin infusion — platelet fluctuations are expected',
+    'Notify the provider immediately of the significant platelet drop',
+    'Document the finding and prepare to discontinue heparin per order',
+    'Monitor the client for new thrombosis despite being on anticoagulation',
+    'Administer aspirin to prevent platelet aggregation',
+    'Anticipate an order for a non-heparin anticoagulant such as argatroban'
+  ],
+  correct:[1,2,3,5],
+  rationale:'A platelet count drop of >50% occurring 5–10 days after heparin initiation is the hallmark of <strong>Heparin-Induced Thrombocytopenia (HIT)</strong>. HIT is paradoxically prothrombotic. Actions: stop heparin, notify provider, monitor for clotting despite anticoagulation, and anticipate switching to direct thrombin inhibitors (argatroban, bivalirudin).',
+  wrongExplain:'<strong>Continue heparin</strong>: dangerous — HIT requires immediate discontinuation. <strong>Aspirin</strong>: not the intervention for HIT; may increase bleeding without addressing the mechanism.'
+},
+
+// ─── Q40 ─────────────────────────────────────────────────────────────────────
+{
+  type:'priority',
+  topic:'Post-MI Complication Recognition',
+  stem:'A nurse is caring for a client on post-MI day 3 who suddenly develops sharp, severe chest pain that worsens with deep breathing and improves when leaning forward. Heart rate is 108 bpm and a friction rub is auscultated. Which condition does the nurse suspect and what is the priority action?',
+  options:[
+    'Reinfarction — call rapid response and prepare for repeat catheterization',
+    'Pericarditis — notify provider and anticipate order for anti-inflammatory therapy (e.g., NSAIDs, colchicine)',
+    'Pneumonia — obtain sputum culture and begin antibiotics',
+    'Pulmonary embolism — prepare for anticoagulation and CT angiography',
+    'Costochondritis — administer PRN acetaminophen and reassure client'
+  ],
+  correct:[1],
+  rationale:'Post-MI pericarditis (Dressler syndrome or early pericarditis) presents with sharp pleuritic chest pain that <strong>improves leaning forward</strong> and <strong>worsens supine/inspiration</strong>, plus a <strong>pericardial friction rub</strong>. Treatment: NSAIDs (aspirin preferred post-MI) and colchicine. Notify provider promptly.',
+  wrongExplain:'<strong>Reinfarction</strong>: would present with ischemic (pressure/squeezing) pain, not pleuritic. <strong>Pneumonia</strong>: no respiratory infection signs. <strong>PE</strong>: possible but friction rub and postural relief strongly indicate pericarditis. <strong>Costochondritis</strong>: not a post-MI complication; friction rub distinguishes this.'
+},
+
+// ─── Q41 ─────────────────────────────────────────────────────────────────────
+{
+  type:'sata',
+  topic:'Cardiac Catheterization Preparation',
+  stem:'A nurse is preparing a client for cardiac catheterization. Which interventions are appropriate pre-procedure nursing actions? Select all that apply.',
+  options:[
+    'Ensure informed consent is obtained and signed',
+    'Assess for allergy to shellfish, iodine, or contrast dye',
+    'Administer prescribed anticoagulation medications as ordered',
+    'Ensure the client has been NPO as ordered',
+    'Start a 16–18 gauge IV catheter in the antecubital vein',
+    'Shave the groin or wrist access site if ordered',
+    'Administer potassium supplements without a provider order'
+  ],
+  correct:[0,1,3,4,5],
+  rationale:'Pre-cath preparation: <strong>informed consent</strong>, <strong>contrast allergy screening</strong> (shellfish allergy correlates with iodine sensitivity), <strong>NPO status</strong> for safety, <strong>large-bore IV</strong> for contrast and emergency medications, and <strong>site preparation</strong>.',
+  wrongExplain:'<strong>Anticoagulation</strong>: depends on physician orders — not given routinely pre-cath without specific orders. <strong>Potassium supplements without order</strong>: never — this is outside the nurse\'s independent scope and could cause hyperkalemia.'
+},
+
+// ─── Q42 ─────────────────────────────────────────────────────────────────────
+{
+  type:'matrix2',
+  topic:'Post-Cardiac Cath Effectiveness',
+  stem:'A client returns from femoral cardiac catheterization. For each finding 2 hours post-procedure, indicate if the nursing plan has been Effective or Ineffective.',
+  rows:[
+    'Distal pulses 2+ bilaterally in both lower extremities',
+    'Small expanding hematoma noted at femoral puncture site',
+    'Client is voiding adequate amounts of clear, light yellow urine',
+    'Right foot cool and mottled compared to left',
+    'Client remains flat with right leg extended as instructed',
+    'Client\'s creatinine stable, no contrast nephropathy signs'
+  ],
+  correctCols:['effective','ineffective','effective','ineffective','effective','effective'],
+  rationale:'Effective outcomes: <strong>intact distal pulses</strong>, <strong>adequate urine output</strong> (contrast excretion), <strong>maintained positioning</strong>, <strong>stable renal function</strong>. Ineffective: <strong>expanding hematoma</strong> = active bleeding requiring intervention (pressure, notify provider). <strong>Unilateral cool/mottled foot</strong> = possible arterial occlusion — emergency.'
+},
+
+// ─── Q43 ─────────────────────────────────────────────────────────────────────
+{
+  type:'mc',
+  topic:'Contrast Nephropathy Prevention',
+  stem:'Which intervention is MOST important for the nurse to implement to reduce the risk of contrast-induced nephropathy following cardiac catheterization?',
+  options:[
+    'Restrict all oral fluids for 12 hours post-procedure',
+    'Administer IV acetylcysteine immediately post-procedure without an order',
+    'Encourage adequate hydration with oral or IV fluids pre- and post-procedure',
+    'Monitor daily liver function tests for 5 days',
+    'Apply compression stockings to both lower extremities'
+  ],
+  correct:[2],
+  rationale:'<strong>Adequate hydration</strong> is the most evidence-based intervention to prevent contrast nephropathy. Fluids dilute the nephrotoxic contrast medium and maintain renal perfusion. IV normal saline is often ordered pre- and post-procedure.',
+  wrongExplain:'<strong>Restricting fluids</strong>: opposite of what is needed — dehydration worsens nephrotoxic risk. <strong>Acetylcysteine</strong>: may be ordered but not independently by the nurse. <strong>Liver function tests</strong>: contrast affects kidneys, not liver. <strong>Compression stockings</strong>: irrelevant to nephropathy prevention.'
+},
+
+// ─── Q44 ─────────────────────────────────────────────────────────────────────
+{
+  type:'priority',
+  topic:'Dysrhythmia Recognition',
+  stem:'A nurse is monitoring a post-cardiac catheterization client on telemetry. The monitor shows a sudden change to a wide-complex, irregular rhythm with no discernible P waves and rate of 280/min. What is the nurse\'s PRIORITY action?',
+  options:[
+    'Obtain a 12-lead ECG and call the provider',
+    'Assess the client immediately — confirm presence or absence of pulse',
+    'Administer amiodarone 150 mg IV bolus as per ACLS protocol',
+    'Prepare the defibrillator and call for assistance',
+    'Document the rhythm and reassess in 5 minutes'
+  ],
+  correct:[1],
+  rationale:'The rhythm description suggests ventricular fibrillation or pulseless ventricular tachycardia — but the FIRST action is always to <strong>assess the client</strong>. A rhythm on a monitor is meaningless without patient assessment. If pulseless: call code, begin CPR, defibrillate. Never treat the monitor — treat the patient.',
+  wrongExplain:'<strong>ECG and call provider</strong>: takes too long if pulseless. <strong>Amiodarone</strong>: only after confirming pulse status and if VT is perfusing. <strong>Prepare defibrillator</strong>: concurrent with assessment, not before. <strong>Wait 5 minutes</strong>: potentially fatal delay.'
+},
+
+// ─── Q45 ─────────────────────────────────────────────────────────────────────
+{
+  type:'sata',
+  topic:'Health Promotion — Cardiac Risk Reduction',
+  stem:'A nurse is providing health promotion education to a group of community members about reducing cardiovascular risk. Which recommendations should the nurse include? Select all that apply.',
+  options:[
+    'Achieve and maintain a healthy weight with BMI 18.5–24.9',
+    'Engage in at least 150 minutes of moderate aerobic activity per week',
+    'Limit sodium intake to <2,300 mg/day; <1,500 mg/day if hypertensive',
+    'Limit alcohol to no more than 1 drink/day for women, 2 for men',
+    'Eliminate all dietary fat including unsaturated fats',
+    'Monitor blood pressure regularly — target <130/80 mmHg',
+    'Screen for and manage diabetes with target HbA1c <7%'
+  ],
+  correct:[0,1,2,3,5,6],
+  rationale:'All are evidence-based AHA/ACC cardiovascular prevention guidelines. <strong>Weight management, exercise, sodium restriction, moderate alcohol, BP control, and diabetes management</strong> all independently reduce cardiovascular event risk.',
+  wrongExplain:'<strong>"Eliminate all fat"</strong>: incorrect — unsaturated fats (olive oil, nuts, fish) are cardioprotective. Saturated and trans fats should be limited, not all dietary fat.'
+},
+
+// ─── Q46 ─────────────────────────────────────────────────────────────────────
+{
+  type:'mc',
+  topic:'Aspirin Allergy / Drug Interaction',
+  stem:'A client with STEMI is allergic to aspirin (documented as urticaria). The cardiologist orders aspirin 324 mg PO STAT. Which action should the nurse take?',
+  options:[
+    'Administer the aspirin — the benefits outweigh the risks in STEMI',
+    'Hold the aspirin, notify provider, and document the allergy',
+    'Administer half the dose to reduce allergic risk',
+    'Pre-medicate with diphenhydramine then give the aspirin',
+    'Substitute ibuprofen 400 mg instead'
+  ],
+  correct:[1],
+  rationale:'The nurse must hold the ordered aspirin and <strong>notify the provider immediately</strong> of the documented allergy before administering. The provider may still choose to administer aspirin (urticaria is less severe than anaphylaxis) or may order clopidogrel as an alternative. The nurse\'s role is to clarify and ensure safe medication administration.',
+  wrongExplain:'<strong>Administer anyway</strong>: dangerous without provider review of allergy documentation. <strong>Half dose</strong>: not evidence-based. <strong>Pre-medicate and give</strong>: not within nursing independent scope. <strong>Ibuprofen</strong>: NSAIDs are generally avoided in MI/HF due to adverse cardiac effects.'
+},
+
+// ─── Q47 ─────────────────────────────────────────────────────────────────────
+{
+  type:'matrix3',
+  topic:'Heart Failure Medications — Matrix',
+  stem:'A client with chronic HF is on carvedilol, lisinopril, spironolactone, and furosemide. For each medication-related action, indicate Indicated, Contraindicated, or Non-Essential.',
+  rows:[
+    'Hold carvedilol if morning HR is 52 bpm and notify provider',
+    'Administer lisinopril despite BP 82/50 because it is ordered daily',
+    'Monitor serum potassium when client is on both furosemide and spironolactone',
+    'Teach client to limit high-potassium foods due to spironolactone use',
+    'Administer furosemide even if client is unable to void and has no urinary output all shift'
+  ],
+  correctCols:['indicated','contraindicated','indicated','indicated','contraindicated'],
+  rationale:'<strong>Hold carvedilol</strong>: beta-blocker must be held for HR <60. <strong>Lisinopril with hypotension</strong>: contraindicated — ACE inhibitor worsens hypotension; hold and notify. <strong>Potassium monitoring</strong>: furosemide wastes K+ while spironolactone retains it — hyperkalemia risk with combination. <strong>Dietary K+ restriction</strong>: spironolactone causes K+ retention — avoid high-K+ foods. <strong>Furosemide with no UO</strong>: contraindicated without evaluating why — may indicate AKI; notify provider.'
+},
+
+// ─── Q48 ─────────────────────────────────────────────────────────────────────
+{
+  type:'mc',
+  topic:'Warfarin Monitoring',
+  stem:'A client with atrial fibrillation is on warfarin therapy. Today\'s INR result is 4.8. The client has no signs of active bleeding. Which action should the nurse take FIRST?',
+  options:[
+    'Administer the scheduled warfarin dose as ordered',
+    'Administer vitamin K 10 mg IV push without a provider order',
+    'Hold the warfarin dose and notify the provider of the supratherapeutic INR',
+    'Recheck the INR in 6 hours and administer warfarin if unchanged',
+    'Apply additional pressure bandages to all IV sites preventatively'
+  ],
+  correct:[2],
+  rationale:'INR 4.8 is significantly above the therapeutic range for atrial fibrillation (2.0–3.0), indicating excessive anticoagulation and high bleeding risk. The nurse holds warfarin and notifies the provider. The provider may order vitamin K, FFP, or simply hold future doses.',
+  wrongExplain:'<strong>Administer anyway</strong>: dangerous — worsens supratherapeutic level. <strong>Vitamin K IV push without order</strong>: medication administration requires an order. <strong>Recheck and wait</strong>: delays critical intervention. <strong>Pressure bandages prophylactically</strong>: not the priority action.'
+},
+
+// ─── Q49 ─────────────────────────────────────────────────────────────────────
+{
+  type:'sata',
+  topic:'Spironolactone Adverse Effects',
+  stem:'A nurse is monitoring a client on spironolactone 25 mg daily for HF. Which findings should the nurse report to the provider? Select all that apply.',
+  options:[
+    'Serum potassium 5.9 mEq/L',
+    'Client reports breast tenderness (gynecomastia)',
+    'Serum potassium 3.8 mEq/L',
+    'ECG shows peaked T waves and widened QRS',
+    'Client reports increased urination after dose',
+    'Serum sodium 148 mEq/L'
+  ],
+  correct:[0,1,3,5],
+  rationale:'<strong>K+ 5.9</strong>: severe hyperkalemia — spironolactone is a potassium-sparing diuretic. <strong>Gynecomastia</strong>: anti-androgen side effect of spironolactone — provider should know. <strong>Peaked T waves + wide QRS on ECG</strong>: hallmark of dangerous hyperkalemia — cardiac emergency. <strong>Na+ 148</strong>: hypernatremia requires provider notification.',
+  wrongExplain:'<strong>K+ 3.8</strong>: normal (3.5–5.0) — no concern. <strong>Increased urination</strong>: expected diuretic effect — not concerning.'
+},
+
+// ─── Q50 ─────────────────────────────────────────────────────────────────────
+{
+  type:'priority',
+  topic:'Peripheral Venous Disease vs Arterial',
+  stem:'A nurse is assessing two clients. Client A has pain that worsens with elevation of the leg and improves when the leg hangs down. Client B has pain that increases with walking and is relieved by rest. Which interpretation by the nurse is correct?',
+  options:[
+    'Both clients have venous insufficiency and should elevate their legs',
+    'Client A has venous disease; Client B has arterial disease (claudication)',
+    'Client A has arterial disease; Client B has venous disease',
+    'Both clients have arterial disease and require surgical intervention',
+    'Client A has cardiac failure; Client B has neuropathy'
+  ],
+  correct:[2],
+  rationale:'<strong>Client A</strong>: pain worsening with elevation and relieved by dependent positioning = <strong>arterial disease</strong> (gravity assists arterial flow in dependent position). <strong>Client B</strong>: pain with walking (increased demand) relieved by rest = <strong>intermittent claudication</strong> — classic symptom of peripheral arterial disease (PAD). Venous disease typically worsens with prolonged standing/dependency and improves with elevation.',
+  wrongExplain:'Classic distinction: <strong>arterial</strong> = worsens with elevation/exercise, improves dependent; <strong>venous</strong> = worsens with dependency, improves with elevation. Know this pattern cold for NCLEX.'
+},
+
+// ─── Q51 ─────────────────────────────────────────────────────────────────────
+{
+  type:'mc',
+  topic:'Oxygen Therapy in ACS',
+  stem:'A client with acute MI has an SpO₂ of 96% on room air and is comfortable. The nurse prepares to apply supplemental oxygen via nasal cannula. Which action is most appropriate based on current evidence-based practice?',
+  options:[
+    'Apply oxygen at 2L/NC routinely — all ACS patients require supplemental O₂',
+    'Apply 10L non-rebreather mask immediately regardless of SpO₂',
+    'Do not apply supplemental oxygen — SpO₂ ≥94% does not require routine supplementation in ACS',
+    'Wait until SpO₂ drops below 85% before applying oxygen',
+    'Apply oxygen only if the client complains of dyspnea'
+  ],
+  correct:[2],
+  rationale:'Current AHA evidence shows routine oxygen in <strong>normoxic ACS patients (SpO₂ ≥94%)</strong> does not improve outcomes and may increase infarct size through vasoconstriction. Oxygen is indicated when SpO₂ <90%, significant dyspnea, or heart failure is present. Evidence-based practice: <strong>treat hypoxia, not the number</strong>.',
+  wrongExplain:'<strong>Routine O₂ for all ACS</strong>: outdated practice. <strong>10L NRB</strong>: excessive for normoxic patient. <strong>Wait for 85%</strong>: too late — intervene at <90%. <strong>Only with dyspnea</strong>: partially correct but SpO₂ threshold (<90%) is the trigger, not subjective dyspnea alone.'
+},
+
+// ─── Q52 ─────────────────────────────────────────────────────────────────────
+{
+  type:'delegate',
+  topic:'Delegation — Unstable Cardiac Client',
+  stem:'The RN is caring for an unstable client admitted with cardiogenic shock on vasopressor infusion. Which task is most appropriate for the RN to delegate to the UAP?',
+  options:[
+    'Assess the client\'s mental status and document findings',
+    'Empty the urinary catheter drainage bag and record the output',
+    'Titrate the dopamine infusion based on the client\'s MAP',
+    'Administer the client\'s scheduled oral metoprolol',
+    'Perform and document a complete head-to-toe assessment'
+  ],
+  correct:[1],
+  rationale:'For an unstable client, nearly all clinical tasks belong to the RN. However, <strong>emptying the urinary catheter bag and recording output</strong> is a basic care task that does not require clinical judgment — a UAP can perform this safely.',
+  wrongExplain:'<strong>Mental status assessment</strong>: RN only — requires clinical interpretation. <strong>Titrating dopamine</strong>: RN only — vasopressor titration requires advanced clinical judgment and is never delegated. <strong>Metoprolol administration</strong>: RN (or LPN per facility), not UAP. <strong>Full assessment</strong>: RN scope only.'
+},
+
+// ─── Q53 ─────────────────────────────────────────────────────────────────────
+{
+  type:'matrix3',
+  topic:'Cardiogenic Shock — Nursing Actions',
+  stem:'A client is in cardiogenic shock following MI. For each nursing action, indicate Indicated, Contraindicated, or Non-Essential.',
+  rows:[
+    'Administer high-flow oxygen via non-rebreather mask',
+    'Administer IV normal saline 1L bolus to increase preload',
+    'Monitor urine output hourly — goal ≥30 mL/hr',
+    'Begin vasopressor/inotrope infusion as ordered',
+    'Position client supine with legs elevated 30 degrees',
+    'Prepare client for possible mechanical circulatory support (IABP)'
+  ],
+  correctCols:['indicated','contraindicated','indicated','indicated','contraindicated','indicated'],
+  rationale:'<strong>O₂</strong>: supports ischemic myocardium. <strong>NS bolus</strong>: contraindicated in cardiogenic shock — excess fluid worsens pulmonary edema (this isn\'t hypovolemic shock). <strong>Hourly UO monitoring</strong>: renal perfusion indicator. <strong>Vasopressors/inotropes</strong>: essential to maintain MAP and contractility. <strong>Leg elevation</strong>: increases venous return to a failing heart — worsens pulmonary edema. <strong>IABP</strong>: balloon pump reduces afterload; may be indicated in refractory shock.'
+},
+
+// ─── Q54 ─────────────────────────────────────────────────────────────────────
+{
+  type:'mc',
+  topic:'SpO₂ vs SaO₂',
+  stem:'A client with acute asthma is placed on continuous pulse oximetry. The nurse notes SpO₂ is 95%. Which statement best reflects the nurse\'s understanding of pulse oximetry limitations?',
+  options:[
+    'SpO₂ 95% guarantees the client is receiving adequate oxygen delivery to tissues',
+    'Pulse oximetry is always accurate regardless of circulatory status',
+    'SpO₂ may be falsely elevated in carbon monoxide poisoning and may not reflect true oxygen saturation',
+    'A SpO₂ of 95% is dangerously low and requires immediate intervention',
+    'Pulse oximetry directly measures PaO₂ from the arterial blood'
+  ],
+  correct:[2],
+  rationale:'Pulse oximetry measures <strong>hemoglobin saturation</strong>, not actual oxygen content. In <strong>carbon monoxide poisoning</strong>, CO binds hemoglobin and reads as oxygen — SpO₂ is falsely high. Other limitations: poor peripheral perfusion, nail polish, motion artifact, anemia (low Hgb = low O₂ carrying capacity even with 100% saturation).',
+  wrongExplain:'SpO₂ does NOT guarantee tissue oxygenation. Oximetry is NOT always accurate. SpO₂ 95% is acceptable (goal ≥94%). Oximetry does NOT measure PaO₂ — ABGs do.'
+},
+
+// ─── Q55 ─────────────────────────────────────────────────────────────────────
+{
+  type:'bowtie',
+  topic:'Acute Pulmonary Edema — Bowtie',
+  stem:'A 72-year-old with known HF develops acute pulmonary edema. Complete the clinical bowtie.',
+  centerLabel:'Pulmonary Edema',
+  causeOptions:['Left ventricular failure causing pulmonary venous congestion','Right ventricular hypertrophy','Dehydration and low circulating volume','Pulmonary fibrosis'],
+  causeCorrect:['Left ventricular failure causing pulmonary venous congestion'],
+  actionOptions:['Sit client upright — high Fowler\'s with legs dangling; apply O₂; give IV diuretics','Lay client flat and apply cold compresses to chest','Administer IV normal saline to increase preload','Give beta-blocker to slow heart rate immediately'],
+  actionCorrect:['Sit client upright — high Fowler\'s with legs dangling; apply O₂; give IV diuretics'],
+  assessOptions:['SpO₂ improves to 95%, crackles decreasing, client reporting improved breathing','SpO₂ remains at 84%, client still producing frothy sputum','Urine output drops to 5 mL/hr','Blood pressure falls to 80/50 after diuretics'],
+  assessCorrect:['SpO₂ improves to 95%, crackles decreasing, client reporting improved breathing'],
+  rationale:'Pulmonary edema = fluid in alveoli from LV failure. Treatment sequence: <strong>position (reduce venous return via gravity), O₂ (treat hypoxia), IV furosemide (rapid diuresis)</strong>. Nitroglycerin may be added for preload reduction. Effectiveness: improving SpO₂, clearing crackles, and improved dyspnea confirm treatment is working.'
+},
+
+// ─── Q56 ─────────────────────────────────────────────────────────────────────
+{
+  type:'sata',
+  topic:'Hypertensive Crisis Interventions',
+  stem:'A nurse is caring for a client in hypertensive emergency with BP 210/128 and new-onset confusion. Which nursing actions are appropriate? Select all that apply.',
+  options:[
+    'Begin continuous IV antihypertensive infusion as ordered',
+    'Perform frequent neurological checks every 15–30 minutes',
+    'Lower BP to normal within 30 minutes using maximum medication doses',
+    'Apply continuous cardiac monitoring',
+    'Establish IV access if not already present',
+    'Restrict all stimuli — dim lights, quiet environment to reduce catecholamines',
+    'Administer oral antihypertensives only — avoid all IV medications'
+  ],
+  correct:[0,1,3,4,5],
+  rationale:'Hypertensive emergency management: <strong>IV antihypertensives</strong> (labetalol, nicardipine, nitroprusside), <strong>neuro monitoring</strong> for end-organ progression, <strong>cardiac monitoring</strong>, <strong>IV access</strong>, and <strong>environmental calming</strong> to minimize sympathetic stimulation.',
+  wrongExplain:'<strong>"Lower BP to normal in 30 min"</strong>: NEVER — rapid reduction causes ischemic stroke, MI, or renal failure. Goal is 20–25% reduction in first hour. <strong>"Oral antihypertensives only"</strong>: IV route required for emergencies; oral medications are for urgency, not emergency.'
+},
+
+// ─── Q57 ─────────────────────────────────────────────────────────────────────
+{
+  type:'mc',
+  topic:'BNP Lab Interpretation',
+  stem:'A client admitted for dyspnea has a BNP level of 1,450 pg/mL. Which interpretation by the nurse is correct?',
+  options:[
+    'BNP within normal limits — dyspnea is likely due to pulmonary cause only',
+    'Mildly elevated BNP — monitor and recheck in 48 hours',
+    'Significantly elevated BNP — strongly suggestive of heart failure with volume overload',
+    'BNP elevation is expected in all elderly patients',
+    'BNP measures cardiac enzymes and rules out myocardial infarction'
+  ],
+  correct:[2],
+  rationale:'BNP (B-type natriuretic peptide) is released by ventricles under pressure and volume overload. Normal: <100 pg/mL. Levels >400 pg/mL indicate heart failure; >1,000 pg/mL indicates severe HF with high mortality risk. BNP is diagnostic for HF and correlates with severity.',
+  wrongExplain:'<strong>Normal limits</strong>: BNP 1,450 is severely elevated. <strong>"Mildly elevated"</strong>: significantly elevated. <strong>"Expected in elderly"</strong>: some rise with age, but 1,450 is pathologic. <strong>Cardiac enzymes</strong>: BNP is a neurohormone, not a cardiac enzyme; troponin/CK-MB rule out MI.'
+},
+
+// ─── Q58 ─────────────────────────────────────────────────────────────────────
+{
+  type:'priority',
+  topic:'Chest Pain Differential',
+  stem:'A nurse receives four clients with chest pain. Prioritize which client requires the MOST IMMEDIATE assessment.',
+  options:[
+    'Client A: Sharp pain in left chest, reproduces with palpation, afebrile, pain 3/10',
+    'Client B: Burning epigastric pain, relieved by antacids, pain 4/10, no radiation',
+    'Client C: Crushing substernal chest pain 9/10 radiating to left jaw, diaphoretic, HR 108, BP 92/60',
+    'Client D: Pleuritic chest pain worsening with inspiration, slight cough, no fever',
+    'Client E: Chest tightness 5/10 occurring at rest for past 3 hours'
+  ],
+  correct:[2],
+  rationale:'Client C: classic STEMI presentation — crushing substernal pain radiating to jaw, diaphoresis, hypotension, tachycardia. This is cardiovascular collapse in progress. Immediate assessment and code/STEMI protocol activation is required.',
+  wrongExplain:'Client A: musculoskeletal (reproducible with palpation). Client B: GI (GERD/gastritis). Client D: pleuritis. Client E (unstable angina) would be next priority, but C has hemodynamic compromise (BP 92/60).'
+},
+
+// ─── Q59 ─────────────────────────────────────────────────────────────────────
+{
+  type:'sata',
+  topic:'Coronary Artery Disease Risk Reduction',
+  stem:'A nurse is providing discharge teaching to a 48-year-old male with CAD, hypertension, and type 2 diabetes. Which factors does the nurse identify as contributing to the client\'s hospitalization? Select all that apply.',
+  options:[
+    'Uncontrolled blood glucose with HbA1c of 9.2%',
+    'Current smoker — 1.5 pack/day for 25 years',
+    'LDL 195 mg/dL, not on statin therapy',
+    'Regular aerobic exercise 4x per week',
+    'BMI of 34 — class I obesity',
+    'Sodium intake averaging <1,800 mg/day',
+    'BP averaging 158/96 mmHg despite antihypertensive therapy'
+  ],
+  correct:[0,1,2,4,6],
+  rationale:'Contributing risk factors: <strong>uncontrolled DM</strong> (hyperglycemia damages endothelium), <strong>smoking</strong> (accelerates atherosclerosis), <strong>elevated LDL without statin</strong> (missed treatment opportunity), <strong>obesity</strong> (increases cardiac workload, promotes inflammation), and <strong>uncontrolled hypertension</strong> (increases atherosclerotic risk).',
+  wrongExplain:'<strong>Regular exercise</strong>: protective factor — not a contributing risk. <strong>Low sodium</strong>: appropriate — not a contributing risk.'
+},
+
+// ─── Q60 ─────────────────────────────────────────────────────────────────────
+{
+  type:'bowtie',
+  topic:'Hypertensive Crisis — Bowtie',
+  stem:'A 60-year-old presents to the ED with BP 226/138, severe headache, and confusion. Complete the clinical bowtie.',
+  centerLabel:'Hypertensive Emergency',
+  causeOptions:['Non-adherence to antihypertensive medications and uncontrolled BP','Fluid volume deficit from over-diuresis','Excess potassium intake','Hypovolemic shock'],
+  causeCorrect:['Non-adherence to antihypertensive medications and uncontrolled BP'],
+  actionOptions:['Begin IV antihypertensive infusion; continuous cardiac/neuro monitoring; reduce BP gradually 20–25% in first hour','Rapidly lower BP to 120/80 mmHg immediately with IV hydralazine boluses','Administer oral captopril and observe for 2 hours','Give IV furosemide 200 mg and elevate legs'],
+  actionCorrect:['Begin IV antihypertensive infusion; continuous cardiac/neuro monitoring; reduce BP gradually 20–25% in first hour'],
+  assessOptions:['BP reduced by 20% from baseline; confusion clearing; no new neuro deficits','BP drops to 90/60 after 30 minutes of treatment','Client develops new unilateral arm weakness','Urine output drops to 5 mL/hr'],
+  assessCorrect:['BP reduced by 20% from baseline; confusion clearing; no new neuro deficits'],
+  rationale:'Hypertensive emergency: uncontrolled BP + end-organ damage. IV antihypertensives (labetalol, nicardipine) with continuous monitoring. Critical safety: <strong>never drop BP too fast</strong> — cerebral autoregulation adapts to chronic hypertension; rapid reduction causes ischemic stroke. Target: 20–25% reduction in first hour. Effectiveness: BP trending down safely, improving mentation, and no new neurological deficits.'
+}
+
+]; // end QUESTIONS
+
+// ══════════════════════════════════════════════
+// EXAM STATE
+// ══════════════════════════════════════════════
+let currentQ = 0;
+let score = 0;
+let answered = false;
+let results = [];
+
+function startExam() {
+  document.getElementById('splash').style.display = 'none';
+  document.getElementById('exam-screen').style.display = 'block';
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  answered = false;
+
+  // Update header
+  document.getElementById('hdr-q').textContent = `${currentQ+1}/60`;
+  document.getElementById('hdr-score').textContent = score;
+  const pct = Math.round((currentQ / 60) * 100);
+  document.getElementById('hdr-pct').textContent = pct + '%';
+  document.getElementById('progress-fill').style.width = pct + '%';
+
+  // Q number
+  document.getElementById('q-number-display').textContent = `QUESTION ${String(currentQ+1).padStart(2,'0')} / 60`;
+
+  // Badge
+  const badgeEl = document.getElementById('q-type-badge');
+  const typeInfo = {
+    mc:       { label: 'Multiple Choice',       cls: 'badge-mc' },
+    sata:     { label: 'Select All That Apply',  cls: 'badge-sata' },
+    matrix3:  { label: 'Indicated / Contraindicated / Non-Essential', cls: 'badge-matrix' },
+    matrix2:  { label: 'Effective / Ineffective', cls: 'badge-matrix' },
+    bowtie:   { label: 'Bowtie Clinical Reasoning', cls: 'badge-bowtie' },
+    priority: { label: 'Clinical Prioritization', cls: 'badge-priority' },
+    delegate: { label: 'Delegation & Management', cls: 'badge-delegate' },
+    chart:    { label: 'Chart Review',            cls: 'badge-chart' }
+  };
+  const t = typeInfo[q.type] || { label: q.type, cls: 'badge-mc' };
+  badgeEl.innerHTML = `<span class="q-type-badge ${t.cls}">${t.label}</span>`;
+
+  // Case box
+  const caseArea = document.getElementById('case-area');
+  caseArea.innerHTML = '';
+
+  // Stem
+  document.getElementById('q-stem').textContent = q.stem;
+
+  // SATA note
+  const sataNoteArea = document.getElementById('sata-note-area');
+  if (q.type === 'sata' || q.type === 'delegate') {
+    sataNoteArea.innerHTML = '<div class="sata-note">⚠ SELECT ALL THAT APPLY — there may be more than one correct answer</div>';
+  } else {
+    sataNoteArea.innerHTML = '';
+  }
+
+  // Rationale
+  document.getElementById('rationale-box').style.display = 'none';
+  document.getElementById('rationale-correct').textContent = '';
+  document.getElementById('rationale-text').textContent = '';
+  document.getElementById('wrong-explain').innerHTML = '';
+
+  // Buttons
+  document.getElementById('submit-btn').style.display = 'inline-block';
+  document.getElementById('next-btn').style.display = 'none';
+
+  // Render answer area
+  renderAnswerArea(q);
+
+  // Scroll to top
+  window.scrollTo({ top: 64, behavior: 'smooth' });
+}
+
+function renderAnswerArea(q) {
+  const area = document.getElementById('answer-area');
+  area.innerHTML = '';
+
+  if (q.type === 'mc' || q.type === 'priority') {
+    renderOptions(area, q, false);
+  } else if (q.type === 'sata' || q.type === 'delegate') {
+    renderOptions(area, q, true);
+  } else if (q.type === 'matrix3') {
+    renderMatrix(area, q, ['indicated','contraindicated','nonessential'], ['Indicated','Contraindicated','Non-Essential']);
+  } else if (q.type === 'matrix2') {
+    renderMatrix(area, q, ['effective','ineffective'], ['Effective','Ineffective']);
+  } else if (q.type === 'bowtie') {
+    renderBowtie(area, q);
+  }
+}
+
+const LETTERS = ['A','B','C','D','E','F','G'];
+
+function renderOptions(area, q, multi) {
+  // Shuffle options with tracking
+  const indices = [...Array(q.options.length).keys()];
+  shuffle(indices);
+  q._shuffled = indices;
+
+  const list = document.createElement('div');
+  list.className = 'options-list';
+
+  indices.forEach((origIdx, dispIdx) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.dataset.orig = origIdx;
+    btn.innerHTML = `<span class="option-key">${LETTERS[dispIdx]}.</span><span>${q.options[origIdx]}</span>`;
+    btn.onclick = () => toggleOption(btn, multi);
+    list.appendChild(btn);
+  });
+
+  area.appendChild(list);
+}
+
+function toggleOption(btn, multi) {
+  if (answered) return;
+  if (!multi) {
+    document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  } else {
+    btn.classList.toggle('selected');
+  }
+}
+
+function renderMatrix(area, q, cols, colLabels) {
+  const table = document.createElement('table');
+  table.className = 'matrix-table';
+
+  // Header
+  let headerClass = '';
+  const hrow = document.createElement('tr');
+  const th0 = document.createElement('th');
+  th0.textContent = 'Nursing Action';
+  th0.style.width = '55%';
+  hrow.appendChild(th0);
+
+  cols.forEach((c, i) => {
+    const th = document.createElement('th');
+    th.textContent = colLabels[i];
+    if (c === 'indicated' || c === 'effective') th.className = 'th-indicated';
+    if (c === 'contraindicated' || c === 'ineffective') th.className = 'th-contraindicated';
+    if (c === 'nonessential') th.className = 'th-nonessential';
+    hrow.appendChild(th);
+  });
+
+  const thead = document.createElement('thead');
+  thead.appendChild(hrow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  q.rows.forEach((row, ri) => {
+    const tr = document.createElement('tr');
+    const td0 = document.createElement('td');
+    td0.className = 'matrix-row-label';
+    td0.textContent = row;
+    tr.appendChild(td0);
+
+    cols.forEach((c, ci) => {
+      const td = document.createElement('td');
+      td.className = 'matrix-cell';
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.className = 'matrix-radio';
+      radio.name = `matrix-row-${ri}`;
+      radio.value = c;
+      radio.dataset.row = ri;
+      radio.dataset.col = c;
+      td.appendChild(radio);
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+  area.appendChild(table);
+}
+
+function renderBowtie(area, q) {
+  const container = document.createElement('div');
+  container.className = 'bowtie-container';
+
+  // Causes panel
+  const causesPanel = document.createElement('div');
+  causesPanel.className = 'bowtie-panel';
+  causesPanel.innerHTML = `<div class="bowtie-panel-title causes">⚠ Potential Cause</div>`;
+  const causeSelect = document.createElement('select');
+  causeSelect.className = 'bowtie-select';
+  causeSelect.id = 'bt-cause';
+  causeSelect.innerHTML = '<option value="">Select a cause...</option>';
+  q.causeOptions.forEach(o => {
+    causeSelect.innerHTML += `<option value="${o}">${o}</option>`;
+  });
+  causesPanel.appendChild(causeSelect);
+  container.appendChild(causesPanel);
+
+  // Center diamond
+  const center = document.createElement('div');
+  center.className = 'bowtie-center';
+  center.innerHTML = `
+    <div class="bowtie-diamond">
+      <div class="bowtie-diamond-inner">${q.centerLabel}</div>
+    </div>
+  `;
+  container.appendChild(center);
+
+  // Right panel — two sections
+  const rightPanel = document.createElement('div');
+  rightPanel.style.display = 'flex';
+  rightPanel.style.flexDirection = 'column';
+  rightPanel.style.gap = '1rem';
+
+  const actPanel = document.createElement('div');
+  actPanel.className = 'bowtie-panel';
+  actPanel.innerHTML = `<div class="bowtie-panel-title actions">⚡ Nursing Action</div>`;
+  const actSelect = document.createElement('select');
+  actSelect.className = 'bowtie-select';
+  actSelect.id = 'bt-action';
+  actSelect.innerHTML = '<option value="">Select an action...</option>';
+  q.actionOptions.forEach(o => {
+    actSelect.innerHTML += `<option value="${o}">${o}</option>`;
+  });
+  actPanel.appendChild(actSelect);
+
+  const assessPanel = document.createElement('div');
+  assessPanel.className = 'bowtie-panel';
+  assessPanel.innerHTML = `<div class="bowtie-panel-title assessment">✓ Effectiveness Indicator</div>`;
+  const assessSelect = document.createElement('select');
+  assessSelect.className = 'bowtie-select';
+  assessSelect.id = 'bt-assess';
+  assessSelect.innerHTML = '<option value="">Select indicator...</option>';
+  q.assessOptions.forEach(o => {
+    assessSelect.innerHTML += `<option value="${o}">${o}</option>`;
+  });
+  assessPanel.appendChild(assessSelect);
+
+  rightPanel.appendChild(actPanel);
+  rightPanel.appendChild(assessPanel);
+  container.appendChild(rightPanel);
+  area.appendChild(container);
+}
+
+function submitAnswer() {
+  if (answered) return;
+  const q = QUESTIONS[currentQ];
+
+  let isCorrect = false;
+
+  if (q.type === 'mc' || q.type === 'priority') {
+    const selected = document.querySelectorAll('.option-btn.selected');
+    if (selected.length === 0) { alert('Please select an answer.'); return; }
+
+    const selectedOrig = Array.from(selected).map(b => parseInt(b.dataset.orig));
+    isCorrect = arraysEqual(selectedOrig.sort(), [...q.correct].sort());
+
+    document.querySelectorAll('.option-btn').forEach(btn => {
+      const orig = parseInt(btn.dataset.orig);
+      btn.disabled = true;
+      if (q.correct.includes(orig)) {
+        btn.classList.add('reveal-correct');
+        btn.style.borderColor = 'var(--correct)';
+      }
+      if (btn.classList.contains('selected') && !q.correct.includes(orig)) {
+        btn.classList.add('incorrect');
+      }
+      if (btn.classList.contains('selected') && q.correct.includes(orig)) {
+        btn.classList.add('correct');
+      }
+    });
+
+  } else if (q.type === 'sata' || q.type === 'delegate') {
+    const selected = document.querySelectorAll('.option-btn.selected');
+    if (selected.length === 0) { alert('Please select at least one answer.'); return; }
+
+    const selectedOrig = Array.from(selected).map(b => parseInt(b.dataset.orig));
+    isCorrect = arraysEqual(selectedOrig.sort(), [...q.correct].sort());
+
+    document.querySelectorAll('.option-btn').forEach(btn => {
+      const orig = parseInt(btn.dataset.orig);
+      btn.disabled = true;
+      if (q.correct.includes(orig)) {
+        btn.style.borderColor = 'var(--correct)';
+        btn.style.background = 'rgba(46,196,182,0.06)';
+      }
+      if (btn.classList.contains('selected') && !q.correct.includes(orig)) {
+        btn.classList.add('incorrect');
+      }
+      if (btn.classList.contains('selected') && q.correct.includes(orig)) {
+        btn.classList.add('correct');
+      }
+    });
+
+  } else if (q.type === 'matrix3' || q.type === 'matrix2') {
+    const radios = document.querySelectorAll('.matrix-radio');
+    let allAnswered = true;
+    const rowCount = q.rows.length;
+    const userAnswers = new Array(rowCount).fill(null);
+
+    radios.forEach(r => {
+      if (r.checked) userAnswers[parseInt(r.dataset.row)] = r.value;
+    });
+
+    for (let i = 0; i < rowCount; i++) {
+      if (userAnswers[i] === null) { allAnswered = false; break; }
+    }
+    if (!allAnswered) { alert('Please answer all rows before submitting.'); return; }
+
+    let allRight = true;
+    for (let i = 0; i < rowCount; i++) {
+      if (userAnswers[i] !== q.correctCols[i]) allRight = false;
+    }
+    isCorrect = allRight;
+
+    // Reveal correct/wrong
+    radios.forEach(r => {
+      r.disabled = true;
+      const ri = parseInt(r.dataset.row);
+      if (r.value === q.correctCols[ri]) {
+        if (r.checked) r.classList.add('correct-choice');
+        else {
+          r.style.borderColor = 'var(--correct)';
+          r.style.opacity = '0.5';
+        }
+      } else if (r.checked) {
+        r.classList.add('wrong-choice');
+      }
+    });
+
+  } else if (q.type === 'bowtie') {
+    const causeVal = document.getElementById('bt-cause')?.value;
+    const actionVal = document.getElementById('bt-action')?.value;
+    const assessVal = document.getElementById('bt-assess')?.value;
+
+    if (!causeVal || !actionVal || !assessVal) { alert('Please complete all three selections.'); return; }
+
+    const causeOk = q.causeCorrect.includes(causeVal);
+    const actionOk = q.actionCorrect.includes(actionVal);
+    const assessOk = q.assessCorrect.includes(assessVal);
+    isCorrect = causeOk && actionOk && assessOk;
+
+    // Highlight
+    ['bt-cause','bt-action','bt-assess'].forEach((id, i) => {
+      const el = document.getElementById(id);
+      const correctArr = i === 0 ? q.causeCorrect : i === 1 ? q.actionCorrect : q.assessCorrect;
+      if (el) {
+        el.disabled = true;
+        el.style.borderColor = correctArr.includes(el.value) ? 'var(--correct)' : 'var(--incorrect)';
+      }
+    });
+  }
+
+  answered = true;
+  if (isCorrect) score++;
+
+  results.push({ topic: q.topic, type: q.type, correct: isCorrect });
+
+  // Show rationale
+  const rationaleBox = document.getElementById('rationale-box');
+  const rationaleCorrect = document.getElementById('rationale-correct');
+  const rationaleText = document.getElementById('rationale-text');
+  const wrongExplain = document.getElementById('wrong-explain');
+
+  rationaleBox.style.display = 'block';
+  rationaleCorrect.textContent = isCorrect ? '✓ Correct!' : '✗ Incorrect — Review Rationale';
+  rationaleCorrect.style.color = isCorrect ? 'var(--correct)' : 'var(--incorrect)';
+  rationaleText.innerHTML = q.rationale;
+  wrongExplain.innerHTML = q.wrongExplain ? `<strong>Why other options are wrong:</strong><br>${q.wrongExplain}` : '';
+
+  document.getElementById('submit-btn').style.display = 'none';
+  document.getElementById('next-btn').style.display = 'inline-block';
+
+  // Update header score
+  document.getElementById('hdr-score').textContent = score;
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= QUESTIONS.length) {
+    showScore();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showScore() {
+  document.getElementById('exam-screen').style.display = 'none';
+  document.getElementById('score-screen').style.display = 'block';
+  document.getElementById('hdr-q').textContent = '60/60';
+  document.getElementById('hdr-pct').textContent = '100%';
+  document.getElementById('progress-fill').style.width = '100%';
+
+  const pct = Math.round((score / 60) * 100);
+  document.getElementById('final-score-num').textContent = pct + '%';
+
+  let grade, msg, color;
+  if (pct >= 90) { grade = 'DISTINCTION'; msg = 'Outstanding clinical reasoning. NCLEX-ready performance.'; color = 'var(--cyan)'; }
+  else if (pct >= 80) { grade = 'PROFICIENT'; msg = 'Strong performance. Review any missed areas.'; color = 'var(--green)'; }
+  else if (pct >= 70) { grade = 'DEVELOPING'; msg = 'Approaching proficiency. Focus on weak areas below.'; color = 'var(--gold)'; }
+  else { grade = 'NEEDS REVIEW'; msg = 'Review priority framework and pathophysiology. You\'ve got this!'; color = 'var(--accent)'; }
+
+  const gradeEl = document.getElementById('final-grade');
+  gradeEl.textContent = grade;
+  gradeEl.style.color = color;
+  document.getElementById('final-msg').textContent = msg + ` Score: ${score}/60`;
+
+  // Review table
+  const tbody = document.getElementById('review-tbody');
+  tbody.innerHTML = '';
+  results.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-family:'Share Tech Mono',monospace;color:var(--text-dim)">${i+1}</td>
+      <td>${r.topic}</td>
+      <td><span class="q-type-badge badge-mc" style="font-size:0.55rem">${r.type.toUpperCase()}</span></td>
+      <td class="${r.correct ? 'r-correct' : 'r-incorrect'}">${r.correct ? '✓ Correct' : '✗ Incorrect'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function restartExam() {
+  currentQ = 0;
+  score = 0;
+  answered = false;
+  results = [];
+  document.getElementById('score-screen').style.display = 'none';
+  document.getElementById('exam-screen').style.display = 'block';
+  document.getElementById('hdr-score').textContent = '—';
+  renderQuestion();
+}
+
+// ── Utilities ──────────────────────────────────
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function arraysEqual(a, b) {
+  if (a.length !== b.length) return false;
+  return a.every((v, i) => v === b[i]);
+}
+</script>
+</body>
+</html>

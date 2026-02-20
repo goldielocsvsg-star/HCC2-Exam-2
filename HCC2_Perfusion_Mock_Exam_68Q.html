@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HCC2 Perfusion Mock Exam</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a1a; overflow-x: hidden; }
+  #root { min-height: 100vh; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useMemo, useRef } = React;
+
+const shuffleArray = (arr) => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+
+const QUESTIONS = [
+  // ===== HYPERTENSION & HYPERTENSIVE CRISIS (1-12) =====
+  {
+    id: 1,
+    type: "case_mc",
+    category: "Hypertensive Crisis",
+    stem: "A 58-year-old client presents to the emergency department with a blood pressure of 210/118 mmHg, severe headache, blurred vision, and epistaxis. The client has no IV access. Which nursing action is the highest priority?",
+    options: [
+      { text: "Obtain two large-bore IV accesses", correct: true },
+      { text: "Administer sublingual nitroglycerin", correct: false },
+      { text: "Place the client in a supine position", correct: false },
+      { text: "Draw a troponin level immediately", correct: false },
+    ],
+    rationale: "In hypertensive crisis (SBP >180 or DBP >110 with evidence of end-organ damage), establishing IV access is the highest priority because IV antihypertensives are the primary treatment. The client needs two large-bore IVs for rapid medication administration. Sublingual NTG is not the first-line treatment for hypertensive crisis. The client should be placed in semi-Fowler's (not supine) to reduce preload. While troponin may be drawn, it is not the PRIORITY over establishing access for life-saving medications."
+  },
+  {
+    id: 2,
+    type: "sata",
+    category: "Hypertensive Crisis",
+    stem: "A nurse is caring for a client admitted with hypertensive emergency (BP 224/130 mmHg). The provider orders IV nitroprusside. Which nursing interventions are appropriate when administering this medication? Select all that apply.",
+    options: [
+      { text: "Monitor blood pressure every 5-15 minutes during infusion", correct: true },
+      { text: "Assess neurologic status frequently for changes in mental status", correct: true },
+      { text: "Monitor arterial blood gases for signs of metabolic acidosis", correct: true },
+      { text: "Titrate the drip to rapidly lower BP to 120/80 within the first hour", correct: false },
+      { text: "Assess renal function as thiocyanate is cleared by the kidneys", correct: true },
+      { text: "Protect the IV bag from light exposure", correct: true },
+    ],
+    rationale: "Nitroprusside is a rapid vasodilator that breaks down into cyanide, which can cause metabolic acidosis and altered mental status—so ABGs and neuro checks are essential. Its metabolite thiocyanate is renally cleared, requiring renal monitoring. BP must be checked every 5-15 minutes. The solution is light-sensitive and must be protected. Blood pressure should be lowered GRADUALLY (not rapidly to 120/80) because rapid reduction can cause cerebral ischemia, MI, or renal failure."
+  },
+  {
+    id: 3,
+    type: "matrix",
+    category: "Hypertensive Crisis",
+    stem: "A 62-year-old client with a history of uncontrolled hypertension is admitted with BP 198/122 mmHg, severe headache, and confusion. The provider prescribes IV labetalol and continuous cardiac monitoring. After 2 hours of treatment, the nurse reassesses the client. For each finding, indicate whether the interventions were Effective or Ineffective.",
+    rows: [
+      { text: "BP is now 162/98 mmHg", correctAnswer: "Effective" },
+      { text: "Client reports headache has resolved", correctAnswer: "Effective" },
+      { text: "Urine output is 15 mL/hr", correctAnswer: "Ineffective" },
+      { text: "Client is oriented to person, place, and time", correctAnswer: "Effective" },
+      { text: "Heart rate is 42 bpm", correctAnswer: "Ineffective" },
+    ],
+    columns: ["Effective", "Ineffective"],
+    rationale: "A gradual BP reduction from 198/122 to 162/98 shows effective treatment (we don't want rapid drops). Headache resolution and improved orientation indicate reduced end-organ effects. However, urine output of 15 mL/hr is below the minimum of 30 mL/hr, suggesting kidney injury (ineffective). A heart rate of 42 bpm indicates excessive bradycardia from the beta-blocker labetalol, which is an adverse effect requiring intervention (ineffective)."
+  },
+  {
+    id: 4,
+    type: "case_mc",
+    category: "Hypertension",
+    stem: "A 43-year-old African American male finance executive presents for a routine checkup. He reports a history of smoking, BMI of 31, and both parents have hypertension. His BP is 190/110, HR 88, RR 24. Which factor(s) does the nurse identify as non-modifiable risk factors for coronary artery disease?",
+    options: [
+      { text: "Family history of hypertension, African American race, male gender, and age", correct: true },
+      { text: "Smoking, obesity, family history, and African American race", correct: false },
+      { text: "BMI of 31, smoking history, age, and occupation stress", correct: false },
+      { text: "Male gender, smoking, elevated blood pressure, and family history", correct: false },
+    ],
+    rationale: "Non-modifiable risk factors are those that CANNOT be changed: age, male gender, genetics/family history, race/ethnicity, and menopause (in women). Family history of HTN, African American race, male gender, and age are all non-modifiable. Smoking and BMI of 31 (obesity) are MODIFIABLE risk factors. Occupation stress is also modifiable. The question specifically asks about non-modifiable factors only."
+  },
+  {
+    id: 5,
+    type: "sata",
+    category: "Hypertension",
+    stem: "A nurse is developing a teaching plan for a client newly diagnosed with stage 2 hypertension. Which instructions should the nurse include? Select all that apply.",
+    options: [
+      { text: "Restrict sodium intake per AHA guidelines", correct: true },
+      { text: "Exercise for 40 minutes, 3-4 days per week", correct: true },
+      { text: "Limit alcohol to no more than 1 drink/day for women and 2 drinks/day for men", correct: true },
+      { text: "Take antihypertensive medications only when feeling symptomatic", correct: false },
+      { text: "Increase consumption of fresh or frozen vegetables and fruits", correct: true },
+      { text: "Engage in relaxation activities to decrease stress", correct: true },
+    ],
+    rationale: "Health promotion for HTN includes sodium restriction, regular exercise (40 min, 3-4 days/week), limited alcohol intake (1 drink/day women, 2/day men), increased fresh/frozen fruits and vegetables, and stress reduction. Antihypertensive medications should be taken CONSISTENTLY as prescribed, not only when symptomatic. Hypertension is often called the 'silent killer' because many people are asymptomatic even with dangerously elevated BP."
+  },
+  {
+    id: 6,
+    type: "case_mc",
+    category: "Hypertension",
+    stem: "The nurse is caring for an older adult with a history of heart failure and hypertension. The client's current medications include metoprolol, lisinopril, and furosemide. Current vital signs: HR 52, BP 88/54, RR 18. The nurse should hold which ordered medication and notify the health care provider?",
+    options: [
+      { text: "Metoprolol, because the heart rate is bradycardic and BP is hypotensive", correct: true },
+      { text: "Lisinopril, because the respiratory rate is too low", correct: false },
+      { text: "Furosemide, because the heart rate indicates fluid overload", correct: false },
+      { text: "All three medications should be administered as scheduled", correct: false },
+    ],
+    rationale: "Metoprolol is a beta-blocker that lowers heart rate and blood pressure. With a HR of 52 (bradycardic, typically hold if <60) and BP of 88/54 (hypotensive, <90/60), metoprolol should be held and the provider notified because administering it could further decrease HR and BP to dangerous levels. Lisinopril (ACE inhibitor) also lowers BP but the metoprolol is the priority hold given the bradycardia. The RR of 18 is normal and not a reason to hold lisinopril."
+  },
+  {
+    id: 7,
+    type: "matrix",
+    category: "Hypertension",
+    stem: "A client is being discharged after hospitalization for hypertensive crisis. For each client response during discharge teaching, indicate whether the teaching was Effective or Ineffective.",
+    rows: [
+      { text: "\"I will take my blood pressure medication every day even if I feel fine.\"", correctAnswer: "Effective" },
+      { text: "\"I should go to the ER if my blood pressure is above 180 systolic or 110 diastolic.\"", correctAnswer: "Effective" },
+      { text: "\"I can stop taking my medication once my blood pressure is normal for a few weeks.\"", correctAnswer: "Ineffective" },
+      { text: "\"I will use canned vegetables to increase my vegetable intake.\"", correctAnswer: "Ineffective" },
+      { text: "\"I will try the DASH diet my nurse told me about.\"", correctAnswer: "Effective" },
+    ],
+    columns: ["Effective", "Ineffective"],
+    rationale: "Taking medication daily regardless of symptoms shows understanding (HTN is often asymptomatic). Knowing to seek emergency care for BP >180/110 is correct. Stopping medication when BP normalizes is dangerous—medications control, not cure, hypertension. Canned vegetables are typically very high in sodium, which worsens hypertension—fresh or frozen without added salt are preferred. The DASH diet is specifically recommended for hypertension management."
+  },
+  {
+    id: 8,
+    type: "case_mc",
+    category: "Hypertensive Crisis",
+    stem: "A client in hypertensive crisis is receiving IV nicardipine. The nurse notes the BP has dropped from 220/130 to 130/72 within 30 minutes. Which action should the nurse take first?",
+    options: [
+      { text: "Reduce the infusion rate and notify the provider of the rapid BP decrease", correct: true },
+      { text: "Continue the current infusion rate since the BP is now within normal range", correct: false },
+      { text: "Stop the infusion and place the client in Trendelenburg position", correct: false },
+      { text: "Document the finding and recheck in 15 minutes", correct: false },
+    ],
+    rationale: "A drop from 220/130 to 130/72 in 30 minutes is TOO rapid. Blood pressure in hypertensive crisis must be lowered GRADUALLY to reduce the risk of cerebral ischemia, MI, and renal failure. The nurse should reduce the infusion rate and notify the provider immediately. Simply continuing the drip could cause further dangerous drops. Stopping completely and Trendelenburg may cause rebound hypertension. This is not a finding to simply document and wait."
+  },
+  {
+    id: 9,
+    type: "sata",
+    category: "Hypertension Complications",
+    stem: "A nurse is educating a client about the long-term complications of chronically uncontrolled hypertension. Which conditions should the nurse include in the teaching? Select all that apply.",
+    options: [
+      { text: "Renal failure", correct: true },
+      { text: "Stroke", correct: true },
+      { text: "Retinopathy", correct: true },
+      { text: "Heart failure", correct: true },
+      { text: "Peripheral artery disease", correct: true },
+      { text: "Peptic ulcer disease", correct: false },
+    ],
+    rationale: "Chronic uncontrolled hypertension damages vessel walls over time, leading to: renal failure (damaged renal arteries), stroke (cerebral vessel damage), retinopathy (retinal vessel damage), heart failure (increased afterload causing ventricular hypertrophy), peripheral artery disease, coronary artery disease, and myocardial infarction. Peptic ulcer disease is NOT a complication of chronic hypertension—it is caused by H. pylori infection or NSAID use."
+  },
+  {
+    id: 10,
+    type: "case_mc",
+    category: "Hypertensive Crisis",
+    stem: "An emergency department nurse is preparing a client to be transferred to the ICU. The client was treated in the ED for hypertensive emergency with BP 230/140, epistaxis, and confusion. In preparing the ISBAR report, what are the priority data points the ED nurse must communicate?",
+    options: [
+      { text: "Current BP trend, neurological status, IV antihypertensive drip rate, urine output, and target BP range ordered by provider", correct: true },
+      { text: "Admission weight, dietary preferences, family contact information, and allergy list", correct: false },
+      { text: "Insurance information, code status, medication reconciliation, and social history", correct: false },
+      { text: "Last meal time, current BP reading only, and the client's stated pain level", correct: false },
+    ],
+    rationale: "For a hypertensive emergency transfer, the ICU nurse needs the most critical clinical data: BP trend (not just one reading—the trend shows treatment response), neurological status (to monitor for cerebral ischemia or stroke), current drip rate and medication being infused, urine output (indicator of kidney perfusion—<30 mL/hr suggests kidney injury), and the provider's target BP range. While allergies and code status matter, the priority data for this specific condition relates to hemodynamic monitoring and end-organ function."
+  },
+  {
+    id: 11,
+    type: "case_mc",
+    category: "Hypertension Medications",
+    stem: "A client with a history of hypertension and asthma is prescribed a new antihypertensive. Which assessment finding indicates a need for the nurse to consult with the provider before administering propranolol?",
+    options: [
+      { text: "The client's history of asthma, because propranolol is a nonselective beta-blocker that affects the lungs", correct: true },
+      { text: "The client's blood pressure is 142/88, which is too high for propranolol", correct: false },
+      { text: "The client took lisinopril this morning, and the two drugs cannot be combined", correct: false },
+      { text: "The client reports mild ankle edema, which contraindicates all beta-blockers", correct: false },
+    ],
+    rationale: "Propranolol is a NONSELECTIVE beta-blocker, meaning it blocks both beta-1 (heart) and beta-2 (lungs) receptors. Beta-2 blockade causes bronchoconstriction, which is CONTRAINDICATED in clients with asthma or reactive airway disease. The nurse must consult the provider—a cardioselective beta-blocker (like metoprolol) may be safer. A BP of 142/88 is actually an indication FOR the medication, not against it. Lisinopril and beta-blockers can be used together. Ankle edema alone does not contraindicate beta-blockers."
+  },
+  {
+    id: 12,
+    type: "case_mc",
+    category: "Hypertension Prioritization",
+    stem: "A charge nurse is reviewing the status of four clients. Which client should the charge nurse see FIRST?",
+    options: [
+      { text: "A client with BP 226/132, severe headache, and new-onset confusion", correct: true },
+      { text: "A client with BP 158/94 who is due for scheduled antihypertensive medications", correct: false },
+      { text: "A client post-cardiac catheterization with a stable BP of 128/78 and intact pedal pulses", correct: false },
+      { text: "A client with heart failure who has gained 2 pounds since yesterday", correct: false },
+    ],
+    rationale: "The client with BP 226/132, severe headache, and confusion is in hypertensive EMERGENCY with evidence of end-organ damage (neurological changes). This is an immediately life-threatening situation requiring urgent intervention. The client due for scheduled meds is important but not emergent. The post-cath client is stable. The HF client with 2-lb weight gain needs assessment but is not in immediate danger. Use the ABCs and Maslow's hierarchy—acute neurological changes with dangerously elevated BP = see FIRST."
+  },
+  // ===== ATHEROSCLEROSIS & LIPID MANAGEMENT (13-18) =====
+  {
+    id: 13,
+    type: "case_mc",
+    category: "Lipid Management",
+    stem: "A client's fasting lipid panel results: Total cholesterol 268 mg/dL, LDL 188 mg/dL, HDL 32 mg/dL, Triglycerides 210 mg/dL. The provider prescribes atorvastatin. Which instruction is MOST important for the nurse to include in the teaching plan?",
+    options: [
+      { text: "Avoid grapefruit and grapefruit juice, and report any muscle pain or cramping immediately", correct: true },
+      { text: "Take the medication only when cholesterol levels are elevated", correct: false },
+      { text: "This medication will replace the need for dietary modifications", correct: false },
+      { text: "Expect mild chest pain as a common side effect of the medication", correct: false },
+    ],
+    rationale: "Statins like atorvastatin require patients to avoid grapefruit/grapefruit juice (increases drug levels and toxicity risk) and report muscle pain/cramping immediately as this can indicate rhabdomyolysis, a serious adverse effect involving muscle breakdown that can lead to kidney failure. Regular lab monitoring of liver function is also needed. Statins are taken daily, not PRN. Diet modification is STILL essential alongside medication. Chest pain is NOT a common statin side effect and should always be investigated."
+  },
+  {
+    id: 14,
+    type: "sata",
+    category: "Atherosclerosis Prevention",
+    stem: "A nurse is teaching a client with newly diagnosed hyperlipidemia about dietary modifications to reduce cardiovascular risk. Which dietary recommendations should the nurse include? Select all that apply.",
+    options: [
+      { text: "Emphasize vegetables, fruits, and whole grains", correct: true },
+      { text: "Choose low-fat dairy products and broiled or baked fish and poultry", correct: true },
+      { text: "Reduce or eliminate trans fat intake", correct: true },
+      { text: "Consume red meat daily for iron and protein needs", correct: false },
+      { text: "Include small servings of nuts and legumes", correct: true },
+      { text: "Replace sugary beverages with water or unsweetened options", correct: true },
+    ],
+    rationale: "Dietary modifications for hyperlipidemia include: emphasis on fruits, vegetables, whole grains; low-fat dairy; baked/broiled (not fried) fish and poultry; eliminating trans fats; nuts in small portions (high calorie but heart-healthy fats); and eliminating sugar-sweetened beverages. Red meat should be LIMITED, not consumed daily, as it is high in saturated fat which raises LDL. The DASH diet and Mediterranean diet are both recommended."
+  },
+  {
+    id: 15,
+    type: "case_mc",
+    category: "Lipid Panel Interpretation",
+    stem: "A nurse is reviewing lab results for a 55-year-old male client. Fasting lipid panel: Total cholesterol 195 mg/dL, LDL 125 mg/dL, HDL 38 mg/dL, Triglycerides 175 mg/dL. Which value is MOST concerning and requires the nurse to follow up with the provider?",
+    options: [
+      { text: "HDL of 38 mg/dL, because it is below the normal range for males (>45 mg/dL), indicating reduced cardiovascular protection", correct: true },
+      { text: "Total cholesterol of 195 mg/dL, because it is dangerously close to the upper limit", correct: false },
+      { text: "LDL of 125 mg/dL, because any LDL above 100 is immediately life-threatening", correct: false },
+      { text: "Triglycerides of 175 mg/dL, because this is critically elevated for a male", correct: false },
+    ],
+    rationale: "HDL of 38 mg/dL is below normal for males (>45 mg/dL). HDL is the 'good' cholesterol that transports cholesterol AWAY from arteries to the liver—low HDL means reduced cardiovascular protection. Total cholesterol of 195 is actually normal (<200). LDL of 125 is borderline but not immediately life-threatening. Triglycerides of 175 is mildly elevated for males (normal 40-160) but the HDL is the most concerning finding because it indicates the client lacks protective cholesterol transport."
+  },
+  {
+    id: 16,
+    type: "case_mc",
+    category: "Health Promotion",
+    stem: "A client asks the nurse, \"How can I raise my HDL cholesterol without medication?\" Which response by the nurse is MOST accurate?",
+    options: [
+      { text: "\"Regular aerobic exercise, smoking cessation, and maintaining a healthy weight are the most effective lifestyle changes to raise HDL.\"", correct: true },
+      { text: "\"Increasing your sodium intake will help raise HDL levels naturally.\"", correct: false },
+      { text: "\"HDL can only be raised through prescription medications like statins.\"", correct: false },
+      { text: "\"Eating more red meat and full-fat dairy products will increase your HDL.\"", correct: false },
+    ],
+    rationale: "HDL is increased primarily through LIFESTYLE changes: regular aerobic exercise, smoking cessation, weight management, and healthy fat intake (olive oil, avocado, fish). Sodium intake has no direct effect on HDL. Statins primarily lower LDL, not raise HDL. Red meat and full-fat dairy are high in saturated fats which raise LDL, not HDL. This is a key health promotion teaching point for cardiovascular risk reduction."
+  },
+  {
+    id: 17,
+    type: "matrix",
+    category: "Cholesterol Management",
+    stem: "A client newly prescribed atorvastatin for hyperlipidemia is being discharged. For each client statement during discharge teaching, indicate whether the teaching was Effective or Ineffective.",
+    rows: [
+      { text: "\"I will have my liver function tests monitored regularly as my doctor recommended.\"", correctAnswer: "Effective" },
+      { text: "\"I can drink grapefruit juice in the morning since it's a healthy choice.\"", correctAnswer: "Ineffective" },
+      { text: "\"I need to call my doctor right away if I notice muscle pain or weakness.\"", correctAnswer: "Effective" },
+      { text: "\"Since I'm on a statin now, I don't need to worry about my diet anymore.\"", correctAnswer: "Ineffective" },
+      { text: "\"I should take this medication consistently as prescribed, not just when I remember.\"", correctAnswer: "Effective" },
+    ],
+    columns: ["Effective", "Ineffective"],
+    rationale: "Regular liver function monitoring is required with statins (correct understanding). Grapefruit juice MUST be avoided as it interferes with statin metabolism and increases toxicity risk. Reporting muscle pain/weakness is critical as it may indicate rhabdomyolysis. Diet modification is STILL essential alongside statin therapy—medication doesn't replace lifestyle changes. Consistent daily dosing is important for statins to effectively lower cholesterol."
+  },
+  {
+    id: 18,
+    type: "case_mc",
+    category: "Risk Factor Assessment",
+    stem: "While obtaining the health history of a 42-year-old female, the nurse learns: her mother and two siblings have had MIs, she smokes with a 20 pack-year history, she works as a mail carrier involving extensive walking, and she takes hydrochlorothiazide with BP controlled at 120-128/69-79 mmHg. Which finding is MOST protective for this client's cardiovascular health?",
+    options: [
+      { text: "Her physically active occupation involving extensive daily walking", correct: true },
+      { text: "Her current blood pressure being within normal limits", correct: false },
+      { text: "Her age of 42, which places her in a low-risk category", correct: false },
+      { text: "Her use of hydrochlorothiazide to manage hypertension", correct: false },
+    ],
+    rationale: "Regular physical activity (her walking-intensive job) is the most PROTECTIVE modifiable factor. Her BP is controlled but only because of medication—the underlying hypertension is still a risk factor. Age 42 does NOT place her in a low-risk category, especially with her smoking history and strong family history of MI. HCTZ manages but doesn't eliminate her hypertension risk. The fact that she gets regular exercise through her occupation is genuinely protective against cardiovascular disease."
+  },
+  // ===== CORONARY ARTERY DISEASE & ACS (19-30) =====
+  {
+    id: 19,
+    type: "case_mc",
+    category: "Acute Coronary Syndrome",
+    stem: "A 68-year-old female presents to the ED with 3 days of progressive weakness, SOB that worsens with activity, and intermittent left arm pain radiating to her neck. She has a history of DM type II, HTN, hyperlipidemia, and PVD. Which nursing assessment is the HIGHEST priority upon arrival?",
+    options: [
+      { text: "Obtain a 12-lead ECG within 10 minutes of arrival", correct: true },
+      { text: "Obtain a complete medication reconciliation", correct: false },
+      { text: "Assess bilateral pedal pulses given her PVD history", correct: false },
+      { text: "Check her blood glucose level for diabetic management", correct: false },
+    ],
+    rationale: "This client's presentation—progressive weakness, activity-related SOB, and arm pain radiating to the neck in a female with multiple cardiac risk factors—is highly suspicious for acute coronary syndrome (ACS). A 12-lead ECG within 10 minutes is the standard of care to identify ST changes indicating MI. Women often present ATYPICALLY with fatigue, SOB, and arm/jaw/neck pain rather than classic crushing chest pain. While medication reconciliation, pulse assessment, and glucose monitoring are all important, none take priority over identifying a potential MI."
+  },
+  {
+    id: 20,
+    type: "sata",
+    category: "Acute Coronary Syndrome",
+    stem: "A client is diagnosed with STEMI. The nurse is preparing to implement the plan of care using evidence-based THROMBINS² guidelines. Which interventions does the nurse anticipate? Select all that apply.",
+    options: [
+      { text: "Administer aspirin to inhibit platelet aggregation", correct: true },
+      { text: "Initiate heparin therapy to prevent clot extension", correct: true },
+      { text: "Administer a beta-blocker to reduce myocardial oxygen demand", correct: true },
+      { text: "Apply oxygen at 4L via nasal cannula regardless of SpO2 level", correct: false },
+      { text: "Prepare for possible percutaneous coronary intervention (PCI)", correct: true },
+      { text: "Administer a high-intensity statin for plaque stabilization", correct: true },
+    ],
+    rationale: "Per THROMBINS²: Aspirin (irreversibly inhibits platelet aggregation, reduces MI mortality), Heparin (prevents clot extension), Beta-blockers (reduce HR and O2 demand within 24 hrs), PCI (invasive intervention for revascularization), and Statins (plaque stabilization + long-term mortality reduction) are all appropriate. However, oxygen should ONLY be given if the patient is HYPOXEMIC—routine O2 in normoxic MI patients does not improve outcomes and may increase complications. This is a key update from the old MONA protocol."
+  },
+  {
+    id: 21,
+    type: "case_mc",
+    category: "Angina",
+    stem: "A client reports chest pain that occurs predictably with exertion, lasts 3-5 minutes, and is consistently relieved by rest and sublingual nitroglycerin. The nurse recognizes this pattern as:",
+    options: [
+      { text: "Chronic stable angina, which is predictable and managed with activity modification and nitroglycerin", correct: true },
+      { text: "Unstable angina, which requires immediate cardiac catheterization", correct: false },
+      { text: "NSTEMI, because any chest pain indicates myocardial injury", correct: false },
+      { text: "STEMI, because the pain recurs with each episode of exertion", correct: false },
+    ],
+    rationale: "Chronic stable angina is characterized by PREDICTABLE chest pain that occurs with exertion, lasts 3-5 minutes, and is relieved by rest or nitroglycerin. It follows a consistent pattern. Unstable angina is UNPREDICTABLE—it occurs at rest, lasts longer, is more severe, or changes pattern. NSTEMI and STEMI involve actual myocardial injury with elevated troponin levels. Chronic stable angina does NOT fall under acute coronary syndrome—it is managed with lifestyle modification and PRN nitroglycerin."
+  },
+  {
+    id: 22,
+    type: "case_mc",
+    category: "ACS Management",
+    stem: "A client experiencing an acute MI receives morphine sulfate IV. The nurse understands the PRIMARY rationale for this intervention is:",
+    options: [
+      { text: "To reduce pain and anxiety, which decreases sympathetic stimulation and myocardial oxygen demand", correct: true },
+      { text: "To directly dilate coronary arteries and restore blood flow to ischemic tissue", correct: false },
+      { text: "To reduce mortality rates based on strong evidence from clinical trials", correct: false },
+      { text: "To prevent further platelet aggregation at the site of arterial blockage", correct: false },
+    ],
+    rationale: "Morphine in ACS reduces pain and anxiety, which decreases sympathetic nervous system activation and subsequently reduces myocardial oxygen demand. This is its primary rationale. Morphine does NOT directly dilate coronary arteries (that's nitroglycerin). Morphine has NOT shown a mortality benefit in clinical trials. Morphine does NOT affect platelet aggregation (that's aspirin and P2Y12 inhibitors). It's important to know that while morphine is still used for symptom management, it is no longer considered first-line due to lack of mortality benefit."
+  },
+  {
+    id: 23,
+    type: "matrix",
+    category: "ACS Nursing Care",
+    stem: "A nurse is preparing to implement the plan of care for a client admitted with acute NSTEMI. The client's current vitals: HR 48, BP 86/52, SpO2 97%, RR 20. The provider has entered multiple orders. For each nursing action, choose whether it is Indicated, Nonessential, or Contraindicated.",
+    rows: [
+      { text: "Administer aspirin 325 mg chewable immediately", correctAnswer: "Indicated" },
+      { text: "Apply oxygen at 6L/min via nasal cannula", correctAnswer: "Nonessential" },
+      { text: "Draw troponin levels and plan to repeat in 3-6 hours", correctAnswer: "Indicated" },
+      { text: "Initiate continuous cardiac monitoring", correctAnswer: "Indicated" },
+      { text: "Administer IV metoprolol 5 mg", correctAnswer: "Contraindicated" },
+      { text: "Start heparin drip per protocol", correctAnswer: "Indicated" },
+      { text: "Obtain a dietary consult for heart-healthy meal preferences", correctAnswer: "Nonessential" },
+      { text: "Administer IV nitroglycerin for chest pain relief", correctAnswer: "Contraindicated" },
+    ],
+    columns: ["Indicated", "Nonessential", "Contraindicated"],
+    rationale: "Aspirin is ALWAYS indicated in ACS (irreversibly inhibits platelet aggregation). O2 is NONESSENTIAL when SpO2 is 97%—oxygen is only given if hypoxemic; it won't harm but is not needed and routine O2 in normoxic patients may increase complications. Troponin with repeat in 3-6 hours is standard. Continuous cardiac monitoring is essential. IV metoprolol is CONTRAINDICATED with HR 48 (bradycardia) and BP 86/52 (hypotension)—beta-blockers worsen both. Heparin prevents clot extension (indicated). A dietary consult is appropriate long-term but NONESSENTIAL in the acute phase. IV nitroglycerin is CONTRAINDICATED because BP is already 86/52—NTG further lowers BP through venodilation, risking cardiovascular collapse."
+  },
+  {
+    id: 24,
+    type: "case_mc",
+    category: "ACS Medications",
+    stem: "A client with ACS is prescribed clopidogrel (Plavix) in addition to aspirin. The nurse understands that this dual antiplatelet therapy is used because:",
+    options: [
+      { text: "P2Y12 inhibitors block a different platelet activation pathway than aspirin, providing more complete platelet inhibition", correct: true },
+      { text: "Clopidogrel is a more potent form of aspirin that replaces its effects", correct: false },
+      { text: "Aspirin alone is no longer recommended in current ACS guidelines", correct: false },
+      { text: "Clopidogrel directly dissolves existing blood clots in the coronary arteries", correct: false },
+    ],
+    rationale: "Clopidogrel is a P2Y12 inhibitor (thienopyridine) that blocks platelet activation at the ADP receptor—a DIFFERENT pathway than aspirin's COX-1 inhibition. Using both provides more complete platelet inhibition through dual mechanisms. Clopidogrel is NOT a form of aspirin and doesn't replace it. Aspirin remains foundational in ACS management. Clopidogrel PREVENTS new clot formation but does NOT dissolve existing clots (thrombolytics do that). The increased bleeding risk of dual therapy is accepted because it significantly reduces cardiac events."
+  },
+  {
+    id: 25,
+    type: "case_mc",
+    category: "ACS Complications",
+    stem: "A nurse is monitoring a client 6 hours post-MI. The client suddenly becomes diaphoretic with BP 78/48, HR 118, cool/clammy skin, and urine output of 10 mL in the past hour. The nurse suspects the client is experiencing:",
+    options: [
+      { text: "Cardiogenic shock, due to left ventricular pump failure following myocardial infarction", correct: true },
+      { text: "Hypovolemic shock, due to fluid loss from diaphoresis", correct: false },
+      { text: "Septic shock, due to infection from the IV access site", correct: false },
+      { text: "A normal response to morphine administration", correct: false },
+    ],
+    rationale: "This presentation—hypotension, tachycardia, cool/clammy skin, decreased urine output after MI—is classic for CARDIOGENIC SHOCK. The damaged myocardium cannot pump effectively, leading to decreased cardiac output. Cardiogenic shock is a serious complication of MI. Hypovolemic shock from diaphoresis alone would be unlikely to cause this severity. Septic shock typically presents with WARM skin initially. These vital signs are NOT a normal morphine response—this is a life-threatening emergency requiring immediate intervention."
+  },
+  {
+    id: 26,
+    type: "case_mc",
+    category: "Nitroglycerin",
+    stem: "A client with chronic stable angina calls the clinic reporting chest pain that started 5 minutes ago while gardening. The nurse should instruct the client to:",
+    options: [
+      { text: "Stop the activity, rest, and take one sublingual nitroglycerin tablet. If pain is not relieved in 5 minutes, call 911", correct: true },
+      { text: "Take three nitroglycerin tablets at once and drive to the emergency department", correct: false },
+      { text: "Continue gardening slowly and take nitroglycerin only if the pain worsens", correct: false },
+      { text: "Lie completely flat and wait 30 minutes before taking any medication", correct: false },
+    ],
+    rationale: "Current guidelines recommend: stop activity and rest, take one sublingual NTG, and if pain is NOT relieved within 5 minutes, call 911. This replaces the older protocol of taking 3 NTG tablets 5 minutes apart. The client should NEVER take all 3 at once (risk of severe hypotension) or drive themselves. Continuing activity during chest pain increases myocardial oxygen demand. Lying flat is not recommended as it increases preload. NTG works by venodilation, reducing preload and oxygen demand."
+  },
+  {
+    id: 27,
+    type: "sata",
+    category: "ACS Risk Factors",
+    stem: "A nurse is assessing a newly admitted client for cardiovascular risk factors. Which factors identified in the client's history are MODIFIABLE risk factors for coronary artery disease? Select all that apply.",
+    options: [
+      { text: "Smoking one pack of cigarettes per day for 15 years", correct: true },
+      { text: "Sedentary lifestyle with no regular exercise", correct: true },
+      { text: "Father had an MI at age 50", correct: false },
+      { text: "Diet high in processed foods and saturated fats", correct: true },
+      { text: "BMI of 33 (obese)", correct: true },
+      { text: "Client is a 62-year-old male", correct: false },
+    ],
+    rationale: "MODIFIABLE risk factors are those that can be changed through lifestyle or treatment: smoking, sedentary lifestyle, poor diet, and obesity. NON-MODIFIABLE risk factors cannot be changed: family history (father with MI at 50) and age/gender (62-year-old male). Identifying modifiable risk factors is essential for health promotion because these are the areas where nursing education can make the most impact on reducing cardiovascular risk."
+  },
+  {
+    id: 28,
+    type: "case_mc",
+    category: "ACS Medication Safety",
+    stem: "A client who recently experienced an MI is prescribed an ACE inhibitor (lisinopril). Two days later, the client develops facial swelling and reports difficulty swallowing. The nurse's PRIORITY action is to:",
+    options: [
+      { text: "Assess the airway immediately and prepare for potential angioedema, a known adverse effect of ACE inhibitors", correct: true },
+      { text: "Administer the next scheduled dose since swelling is a common mild side effect", correct: false },
+      { text: "Apply ice to the facial swelling and continue to monitor", correct: false },
+      { text: "Document the findings and report at the next shift change", correct: false },
+    ],
+    rationale: "Facial swelling and difficulty swallowing in a client on an ACE inhibitor indicates ANGIOEDEMA—a potentially life-threatening adverse effect caused by bradykinin buildup. This can progress to complete airway obstruction. The nurse must immediately assess the airway and call for emergency help. ACE inhibitors must be discontinued permanently, and the client may be switched to an ARB. This is NEVER a mild side effect to simply monitor or apply ice to. Delayed reporting could result in death from airway compromise."
+  },
+  {
+    id: 29,
+    type: "case_mc",
+    category: "ACS Prioritization",
+    stem: "A nurse is caring for a client with acute MI. Current vitals: HR 110, BP 92/58, RR 26, SpO2 89%, and the client reports crushing chest pain rated 9/10. Which intervention should the nurse implement FIRST?",
+    options: [
+      { text: "Apply supplemental oxygen because the SpO2 of 89% indicates hypoxemia", correct: true },
+      { text: "Administer morphine IV for the 9/10 chest pain", correct: false },
+      { text: "Obtain a 12-lead ECG to confirm the MI diagnosis", correct: false },
+      { text: "Administer IV nitroglycerin to relieve the chest pain", correct: false },
+    ],
+    rationale: "Using the ABCs (Airway, Breathing, Circulation), BREATHING takes priority. SpO2 of 89% indicates hypoxemia, and this client IS hypoxemic—supplemental oxygen is indicated. Remember: in ACS, oxygen is given ONLY when the patient is hypoxemic (SpO2 <94%), and this client clearly qualifies. While pain management, ECG, and NTG are all important, ensuring adequate oxygenation comes first. Also, NTG should be used cautiously with BP 92/58 as it further lowers BP."
+  },
+  {
+    id: 30,
+    type: "case_mc",
+    category: "Troponin Interpretation",
+    stem: "A client presents to the ED with chest pain. The initial troponin level is positive. The nurse understands that this result indicates:",
+    options: [
+      { text: "There is damage to the heart muscle, and this finding should be immediately reported to the provider", correct: true },
+      { text: "The chest pain is likely musculoskeletal and not cardiac in origin", correct: false },
+      { text: "The troponin result is only significant if the client is also having ST-segment changes on ECG", correct: false },
+      { text: "A repeat level should be drawn before notifying the provider since a single result is unreliable", correct: false },
+    ],
+    rationale: "ANY positive troponin value indicates damage to the heart muscle and should be IMMEDIATELY reported to the provider. Troponin is highly specific to myocardial injury. A positive troponin makes musculoskeletal cause unlikely. While troponin levels are repeated in 3-6 hours to track trends, the INITIAL positive result alone warrants immediate provider notification—do not wait for repeat levels before reporting. ST-segment changes and troponin are independent markers; you don't need both to act."
+  },
+  // ===== MEDICATIONS - PERFUSION (31-42) =====
+  {
+    id: 31,
+    type: "case_mc",
+    category: "Medication Administration",
+    stem: "A nurse is preparing to administer IV verapamil (a calcium channel blocker) to a client with a supraventricular tachydysrhythmia. Which assessment finding should the nurse report to the provider BEFORE administering this medication?",
+    options: [
+      { text: "Blood pressure of 84/52 mmHg", correct: true },
+      { text: "Heart rate of 142 bpm", correct: false },
+      { text: "Respiratory rate of 18 breaths/min", correct: false },
+      { text: "Temperature of 99.2°F (37.3°C)", correct: false },
+    ],
+    rationale: "Verapamil is a calcium channel blocker that relaxes vascular smooth muscle, dilates coronary arteries, and blocks SA/AV node conduction—all of which LOWER blood pressure and heart rate. A BP of 84/52 is already hypotensive, and administering IV verapamil could cause dangerous further hypotension. The notes specifically state to 'monitor carefully for hypotension, especially if giving IV!' HR of 142 is the reason the medication was ordered. RR 18 and temp 99.2 are within normal limits."
+  },
+  {
+    id: 32,
+    type: "sata",
+    category: "Diuretic Medications",
+    stem: "A client with hypertension and heart failure is prescribed furosemide (Lasix). Which nursing interventions are appropriate for this client? Select all that apply.",
+    options: [
+      { text: "Monitor potassium levels as loop diuretics can cause hypokalemia", correct: true },
+      { text: "Assess daily weights at the same time each day", correct: true },
+      { text: "Monitor intake and output to assess fluid balance", correct: true },
+      { text: "Encourage the client to increase sodium intake to replace losses", correct: false },
+      { text: "Assess for signs of dehydration and orthostatic hypotension", correct: true },
+      { text: "Administer the medication at bedtime for maximum effectiveness", correct: false },
+    ],
+    rationale: "Furosemide is a loop diuretic that promotes significant fluid and potassium excretion. Nursing care includes: monitoring K+ levels (hypokalemia risk → cardiac arrhythmias), daily weights (best indicator of fluid status), strict I&O, and assessing for dehydration/orthostatic hypotension from fluid loss. Clients should RESTRICT sodium (not increase it) as sodium retention worsens HTN and HF. Diuretics should be given in the MORNING to avoid nocturia that disrupts sleep."
+  },
+  {
+    id: 33,
+    type: "case_mc",
+    category: "Medication Interactions",
+    stem: "A client is taking spironolactone (potassium-sparing diuretic) for heart failure. Which dietary instruction is MOST important for the nurse to provide?",
+    options: [
+      { text: "Avoid excessive intake of potassium-rich foods like bananas, oranges, and potatoes to prevent hyperkalemia", correct: true },
+      { text: "Increase potassium-rich foods to replace what is lost through the diuretic effect", correct: false },
+      { text: "Limit fluid intake to 500 mL per day while taking this medication", correct: false },
+      { text: "Avoid all dairy products while taking this medication", correct: false },
+    ],
+    rationale: "Spironolactone is a POTASSIUM-SPARING diuretic (aldosterone antagonist), meaning it RETAINS potassium. Unlike loop diuretics (furosemide), clients on spironolactone are at risk for HYPERKALEMIA, not hypokalemia. Therefore, they must avoid excessive potassium-rich foods. This is a critical distinction—confusing potassium-sparing with potassium-wasting diuretics is a common and dangerous medication error. Fluid restriction to 500 mL/day is too restrictive. Dairy avoidance is not related."
+  },
+  {
+    id: 34,
+    type: "case_mc",
+    category: "Nitroglycerin Administration",
+    stem: "A client receiving IV nitroglycerin for unstable angina reports a severe headache and feeling dizzy. The current BP is 86/50. The nurse should:",
+    options: [
+      { text: "Reduce the nitroglycerin infusion rate and place the client in a supine position to increase venous return", correct: true },
+      { text: "Increase the infusion rate to improve coronary blood flow and relieve the chest pain faster", correct: false },
+      { text: "Administer an additional dose of morphine for the headache", correct: false },
+      { text: "Discontinue the nitroglycerin and start a vasopressor drip immediately", correct: false },
+    ],
+    rationale: "Headache and dizziness with BP 86/50 indicate HYPOTENSION from nitroglycerin's vasodilatory effect. NTG reduces preload through venodilation, and excessive preload reduction causes hypotension. The nurse should REDUCE (not stop) the infusion rate and position supine to increase venous return and blood pressure. Increasing the rate would worsen hypotension. Morphine would further lower BP. Stopping completely and starting a vasopressor is excessive for a medication-induced hypotension that can be managed by rate reduction and positioning."
+  },
+  {
+    id: 35,
+    type: "matrix",
+    category: "Medication Safety",
+    stem: "A nurse is reviewing medication orders for a client admitted with acute MI. The client has a history of asthma. Current vitals: BP 108/68, HR 62, SpO2 96%, RR 16. For each medication order, indicate whether it is Indicated, Nonessential, or Contraindicated.",
+    rows: [
+      { text: "Aspirin 325 mg chewable STAT", correctAnswer: "Indicated" },
+      { text: "Propranolol 40 mg PO (nonselective beta-blocker)", correctAnswer: "Contraindicated" },
+      { text: "Clopidogrel 300 mg loading dose", correctAnswer: "Indicated" },
+      { text: "Supplemental oxygen at 2L nasal cannula", correctAnswer: "Nonessential" },
+      { text: "Lisinopril 5 mg PO", correctAnswer: "Indicated" },
+      { text: "Docusate sodium (stool softener)", correctAnswer: "Indicated" },
+      { text: "Multivitamin daily", correctAnswer: "Nonessential" },
+      { text: "IV morphine 2 mg for a client reporting 0/10 pain", correctAnswer: "Nonessential" },
+    ],
+    columns: ["Indicated", "Nonessential", "Contraindicated"],
+    rationale: "Aspirin is always indicated for MI (platelet inhibition). Propranolol is CONTRAINDICATED because it's a NONselective beta-blocker blocking beta-2 in the lungs—dangerous in asthma (bronchoconstriction). Clopidogrel (P2Y12 inhibitor) is indicated for dual antiplatelet therapy. Supplemental O2 is NONESSENTIAL—SpO2 96% is adequate; oxygen is only indicated if hypoxemic but won't cause direct harm at low flow. Lisinopril (ACE inhibitor) is indicated post-MI to prevent ventricular remodeling. A stool softener is INDICATED post-MI to prevent straining/Valsalva which increases cardiac workload. A daily multivitamin is not harmful but NONESSENTIAL to acute MI management. Morphine for 0/10 pain is NONESSENTIAL—it's a PRN medication for pain/anxiety relief, not needed when the client is pain-free."
+  },
+  {
+    id: 36,
+    type: "case_mc",
+    category: "Beta-Blocker Safety",
+    stem: "A nurse is administering metoprolol to a client. Before administration, which set of vital sign parameters should cause the nurse to HOLD the medication and contact the provider?",
+    options: [
+      { text: "Heart rate below 60 bpm OR systolic blood pressure below 90 mmHg", correct: true },
+      { text: "Heart rate above 100 bpm OR temperature above 100.4°F", correct: false },
+      { text: "Respiratory rate below 20 OR oxygen saturation above 95%", correct: false },
+      { text: "Diastolic blood pressure above 80 mmHg OR heart rate above 80 bpm", correct: false },
+    ],
+    rationale: "Beta-blockers (metoprolol) lower heart rate and blood pressure by blocking beta-1 receptors. The medication should be HELD if HR <60 (could worsen bradycardia) or SBP <90 (could worsen hypotension). These are standard hold parameters for beta-blockers. A HR >100 would actually be an indication FOR the medication. RR <20 and SpO2 >95% are normal values. A DBP >80 and HR >80 would be indications for giving the medication, not holding it."
+  },
+  {
+    id: 37,
+    type: "case_mc",
+    category: "ACE Inhibitor Teaching",
+    stem: "A client who is post-MI has been started on an ACE inhibitor for secondary prevention. The nurse understands the PRIMARY reason ACE inhibitors are prescribed after MI is to:",
+    options: [
+      { text: "Prevent ventricular remodeling and improve long-term survival by blocking the renin-angiotensin-aldosterone system", correct: true },
+      { text: "Directly dissolve the atherosclerotic plaque that caused the MI", correct: false },
+      { text: "Replace the function of damaged myocardial tissue", correct: false },
+      { text: "Prevent infection at the site of myocardial necrosis", correct: false },
+    ],
+    rationale: "ACE inhibitors (and ARBs) block the renin-angiotensin-aldosterone system (RAAS), which prevents ventricular remodeling after MI and improves survival. After MI, the heart can undergo pathological remodeling (dilation, hypertrophy) that worsens function over time. ACE inhibitors prevent this process. They do NOT dissolve plaque (statins stabilize plaque), replace damaged tissue, or prevent infection. This is part of the 'R' in THROMBINS² (RAS blockade)."
+  },
+  {
+    id: 38,
+    type: "sata",
+    category: "Medication Adverse Effects",
+    stem: "A client is prescribed multiple cardiac medications after an MI: aspirin, clopidogrel, metoprolol, lisinopril, and atorvastatin. Which adverse effects should the nurse instruct the client to report IMMEDIATELY? Select all that apply.",
+    options: [
+      { text: "Unusual bruising or prolonged bleeding from a minor cut", correct: true },
+      { text: "Facial or tongue swelling with difficulty breathing", correct: true },
+      { text: "Unexplained muscle pain, tenderness, or weakness", correct: true },
+      { text: "Mild fatigue in the first week of starting metoprolol", correct: false },
+      { text: "Heart rate consistently below 50 bpm with dizziness", correct: true },
+    ],
+    rationale: "Unusual bleeding = dual antiplatelet therapy (aspirin + clopidogrel) increasing bleeding risk. Facial/tongue swelling = angioedema from ACE inhibitor (lisinopril)—life-threatening. Muscle pain/weakness = possible rhabdomyolysis from statin (atorvastatin)—can cause renal failure. HR <50 with dizziness = excessive beta-blockade from metoprolol requiring dose adjustment. Mild fatigue with metoprolol initiation is a COMMON side effect that typically resolves and doesn't require immediate reporting."
+  },
+  {
+    id: 39,
+    type: "case_mc",
+    category: "Therapeutic Communication",
+    stem: "A client newly diagnosed with coronary artery disease states, \"I don't understand why this happened to me. I've always been healthy. My whole life just changed in one day.\" Which is the MOST therapeutic response by the nurse?",
+    options: [
+      { text: "\"It sounds like this diagnosis has been really overwhelming for you. Tell me more about what concerns you most right now.\"", correct: true },
+      { text: "\"Don't worry, heart disease is very common and treatable these days.\"", correct: false },
+      { text: "\"You should focus on the positive—at least it was caught before you had a heart attack.\"", correct: false },
+      { text: "\"Let me get the cardiologist to come explain your condition to you.\"", correct: false },
+    ],
+    rationale: "The most therapeutic response acknowledges the client's feelings (empathy) and uses an open-ended question to explore their concerns further. 'Don't worry' dismisses the client's valid emotions and is not therapeutic. 'Focus on the positive' minimizes the client's experience. Immediately deferring to the physician avoids the therapeutic nurse-client interaction. Therapeutic communication principles: acknowledge feelings first, use open-ended questions, avoid false reassurance, and don't minimize the client's experience."
+  },
+  {
+    id: 40,
+    type: "case_mc",
+    category: "Delegation",
+    stem: "A registered nurse (RN) is caring for an unstable client admitted with acute MI currently receiving IV heparin and nitroglycerin drips. Which task delegated by the RN is suitable to be performed by the unlicensed assistive personnel (UAP)?",
+    options: [
+      { text: "Reporting the client's intake and output measurements to the RN", correct: true },
+      { text: "Adjusting the IV nitroglycerin drip rate based on the client's blood pressure", correct: false },
+      { text: "Assessing the client's chest pain level and location every 2 hours", correct: false },
+      { text: "Monitoring the cardiac monitor for new dysrhythmias", correct: false },
+    ],
+    rationale: "UAPs can perform tasks that are routine, standardized, and do not require nursing judgment: measuring and REPORTING I&O is within UAP scope. Adjusting IV drip rates requires nursing judgment and is NEVER delegated to UAPs. Assessing chest pain requires nursing assessment skills (subjective data interpretation). Monitoring cardiac rhythms for dysrhythmias requires specialized knowledge and clinical judgment. The key word is the UAP 'reports' to the RN—the RN retains responsibility for interpreting the data."
+  },
+  {
+    id: 41,
+    type: "case_mc",
+    category: "Preload and Afterload",
+    stem: "A nurse is caring for a client with chronic hypertension who develops left ventricular hypertrophy. The nurse understands that the pathophysiologic connection between these conditions is:",
+    options: [
+      { text: "Chronic hypertension increases afterload, forcing the left ventricle to work harder against higher resistance, causing it to enlarge over time", correct: true },
+      { text: "Chronic hypertension decreases preload, causing the heart to compensate by thickening the ventricular wall", correct: false },
+      { text: "Chronic hypertension directly damages the myocardial cells, causing them to die and be replaced by scar tissue", correct: false },
+      { text: "Chronic hypertension increases blood volume, which stretches the ventricle until it becomes permanently dilated", correct: false },
+    ],
+    rationale: "Afterload is the resistance the heart must pump AGAINST. Chronic HTN increases arterial resistance (afterload), forcing the left ventricle to generate more force with each contraction. Over time, this increased workload causes the ventricular wall to thicken (hypertrophy)—similar to how a muscle grows with repeated heavy lifting. Eventually, this hypertrophy can lead to heart failure because the thickened wall becomes stiff and fills poorly. This connects HTN → LV hypertrophy → heart failure in one continuous pathophysiologic story."
+  },
+  {
+    id: 42,
+    type: "case_mc",
+    category: "Medication Teaching",
+    stem: "A client with heart failure asks why they need to weigh themselves every morning. The nurse's BEST response is:",
+    options: [
+      { text: "\"Daily weights help detect fluid retention early—a weight gain of 2-3 pounds overnight or 5 pounds in a week may mean your body is holding extra fluid and your treatment needs adjustment.\"", correct: true },
+      { text: "\"We need to make sure you're eating enough calories to maintain your strength.\"", correct: false },
+      { text: "\"It's a standard hospital policy for all cardiac patients.\"", correct: false },
+      { text: "\"Your doctor wants to track your BMI over time to assess your cardiac risk.\"", correct: false },
+    ],
+    rationale: "Daily weights are the BEST indicator of fluid status in heart failure. A gain of 2-3 lbs overnight or 5 lbs in a week suggests fluid retention, indicating worsening HF that may require medication adjustment (increased diuretics). Weighing should be done same time each day, same clothing, same scale, after voiding. This is about fluid monitoring, not calorie intake, hospital policy, or BMI tracking. Patient education about WHY they do something improves adherence."
+  },
+  // ===== HEART FAILURE & COMPLICATIONS (43-50) =====
+  {
+    id: 43,
+    type: "sata",
+    category: "Heart Failure Assessment",
+    stem: "A nurse is assessing a client admitted with acute decompensated heart failure. Which findings does the nurse expect? Select all that apply.",
+    options: [
+      { text: "Crackles in lung bases (pulmonary edema)", correct: true },
+      { text: "Peripheral edema in lower extremities", correct: true },
+      { text: "Elevated BNP (brain natriuretic peptide) level", correct: true },
+      { text: "S3 heart sound (ventricular gallop)", correct: true },
+      { text: "Decreased jugular venous distension", correct: false },
+      { text: "Increased urine output of 200 mL/hr", correct: false },
+    ],
+    rationale: "Heart failure causes fluid backup: left-sided failure → pulmonary edema (crackles), right-sided → peripheral edema. BNP is released when the heart stretches from fluid overload—elevated BNP is a hallmark of HF. S3 (ventricular gallop) indicates volume overload and ventricular dysfunction. JVD would be INCREASED (not decreased) due to fluid backup into the venous system. Urine output would be DECREASED (not 200 mL/hr) because cardiac output is impaired, reducing renal perfusion."
+  },
+  {
+    id: 44,
+    type: "case_mc",
+    category: "Pulmonary Edema",
+    stem: "A client with heart failure suddenly develops severe dyspnea, pink frothy sputum, SpO2 82%, and extreme anxiety. The nurse recognizes this as pulmonary edema. What is the nurse's FIRST action?",
+    options: [
+      { text: "Position the client in high Fowler's position and apply supplemental oxygen immediately", correct: true },
+      { text: "Administer IV morphine to reduce anxiety and preload", correct: false },
+      { text: "Insert a Foley catheter to monitor accurate urine output", correct: false },
+      { text: "Obtain a chest X-ray to confirm the diagnosis", correct: false },
+    ],
+    rationale: "Pulmonary edema is a medical emergency. Pink frothy sputum with SpO2 82% = severe hypoxemia from fluid in the alveoli. FIRST: position in high Fowler's (reduces preload by pooling blood in extremities and improves lung expansion) and apply O2 immediately to address the life-threatening hypoxemia. Morphine, Foley placement, and CXR are all appropriate interventions but come AFTER addressing the ABCs. Breathing (oxygenation) is the priority when SpO2 is critically low."
+  },
+  {
+    id: 45,
+    type: "matrix",
+    category: "Heart Failure",
+    stem: "A client admitted with heart failure has been receiving IV furosemide, fluid restriction, and sodium-restricted diet for 48 hours. For each reassessment finding, indicate whether the interventions were Effective or Ineffective.",
+    rows: [
+      { text: "Weight decreased by 4 pounds since admission", correctAnswer: "Effective" },
+      { text: "BNP decreased from 1200 pg/mL to 650 pg/mL", correctAnswer: "Effective" },
+      { text: "Bilateral lower extremity edema has worsened from +2 to +3", correctAnswer: "Ineffective" },
+      { text: "Lung sounds clear bilaterally, no crackles noted", correctAnswer: "Effective" },
+      { text: "Client reports increased dyspnea when lying flat", correctAnswer: "Ineffective" },
+      { text: "Urine output averages 60 mL/hr over past 12 hours", correctAnswer: "Effective" },
+    ],
+    columns: ["Effective", "Ineffective"],
+    rationale: "Weight loss of 4 lbs = effective diuresis (fluid removal). BNP decrease = reduced cardiac stretch/fluid overload (effective). Worsening edema (+2 to +3) = fluid is NOT being adequately removed (ineffective). Clear lung sounds = pulmonary edema has resolved (effective). Increased orthopnea (dyspnea lying flat) = ongoing fluid overload affecting lungs (ineffective). Urine output of 60 mL/hr = adequate renal perfusion and response to diuretics (effective—normal is >30 mL/hr)."
+  },
+  {
+    id: 46,
+    type: "case_mc",
+    category: "Cardiogenic Shock",
+    stem: "A nurse is monitoring a client in cardiogenic shock post-MI. Which finding indicates the client's condition is WORSENING?",
+    options: [
+      { text: "Urine output of 8 mL/hr, increasing confusion, and BP dropping from 82/54 to 70/40", correct: true },
+      { text: "Heart rate decreasing from 120 to 90 bpm with stable blood pressure", correct: false },
+      { text: "Skin becoming warm and dry with capillary refill of 2 seconds", correct: false },
+      { text: "Client becoming more alert and oriented with improving urine output", correct: false },
+    ],
+    rationale: "Cardiogenic shock = pump failure → decreased cardiac output → organ hypoperfusion. WORSENING signs: urine output 8 mL/hr (severely decreased, normal >30, indicating kidney failure), increasing confusion (cerebral hypoperfusion), and falling BP (70/40 from 82/54). HR decreasing from 120 to 90 with stable BP = improving. Warm/dry skin with brisk cap refill = improved peripheral perfusion. Improving alertness and urine output = treatment is working. The worsening picture shows a classic downward spiral of shock."
+  },
+  {
+    id: 47,
+    type: "case_mc",
+    category: "Heart Failure Teaching",
+    stem: "A client being treated for heart failure states, \"I read online that I should drink lots of water to stay healthy.\" Which is the BEST therapeutic response by the nurse?",
+    options: [
+      { text: "\"With heart failure, your heart has difficulty pumping excess fluid. Your provider has recommended a daily fluid restriction to prevent fluid from building up in your lungs and body.\"", correct: true },
+      { text: "\"That's correct! Hydration is always important, so drink as much as you'd like.\"", correct: false },
+      { text: "\"You should never read health information online. Only listen to your healthcare team.\"", correct: false },
+      { text: "\"Don't worry about fluids right now, we'll handle that for you while you're here.\"", correct: false },
+    ],
+    rationale: "Clients with HF often have fluid restrictions because the failing heart cannot handle excess volume, leading to pulmonary and peripheral edema. The nurse should educate the client about WHY the restriction exists in relation to their specific condition. Encouraging unlimited fluids could be dangerous in HF. Dismissing online research is not therapeutic—instead, redirect with accurate information. 'We'll handle it' doesn't educate the client for self-management at home, which is critical for HF."
+  },
+  {
+    id: 48,
+    type: "sata",
+    category: "Heart Failure Contributing Factors",
+    stem: "A client is admitted with acute exacerbation of chronic heart failure. The nurse reviews the history and finds: non-adherence to sodium-restricted diet, missed furosemide doses for 4 days, recent upper respiratory infection, and consumption of NSAIDs for joint pain. Which factor(s) does the nurse identify as potentially contributing to this hospitalization? Select all that apply.",
+    options: [
+      { text: "Non-adherence to sodium-restricted diet", correct: true },
+      { text: "Missed furosemide doses for 4 days", correct: true },
+      { text: "Recent upper respiratory infection", correct: true },
+      { text: "Consumption of NSAIDs", correct: true },
+    ],
+    rationale: "ALL four factors contribute to HF exacerbation: Excess sodium intake → fluid retention → volume overload. Missed diuretic doses → fluid accumulation without excretion. Infections increase metabolic demand, stressing an already-compromised heart. NSAIDs cause sodium and water retention AND can reduce renal blood flow, counteracting diuretics—they are particularly dangerous in HF. This is a classic NCLEX question about identifying ALL contributing factors to decompensation."
+  },
+  {
+    id: 49,
+    type: "case_mc",
+    category: "BNP Interpretation",
+    stem: "A client presents with dyspnea and bilateral leg edema. The provider orders a BNP level, which returns at 890 pg/mL. The nurse interprets this result as:",
+    options: [
+      { text: "Significantly elevated, consistent with heart failure, as BNP is released when the heart muscle is stretched due to fluid overload", correct: true },
+      { text: "Within normal limits, ruling out a cardiac cause for the symptoms", correct: false },
+      { text: "Indicative of acute myocardial infarction rather than heart failure", correct: false },
+      { text: "Unreliable without a concurrent troponin level for comparison", correct: false },
+    ],
+    rationale: "BNP (brain natriuretic peptide) is released when the heart muscle stretches due to fluid overload. Normal BNP is <100 pg/mL; a level of 890 pg/mL is significantly elevated and strongly suggests heart failure. BNP is NOT a marker of MI—that's troponin. BNP does not need troponin for interpretation as they measure different things (HF vs myocardial injury). Combined with the clinical picture (dyspnea, bilateral edema), this BNP confirms the suspected diagnosis of HF."
+  },
+  {
+    id: 50,
+    type: "case_mc",
+    category: "Heart Failure Delegation",
+    stem: "An RN is caring for a stable client with heart failure who is on a 1500 mL fluid restriction and daily weights. Which instructions should the RN give the UAP? Select the MOST appropriate task.",
+    options: [
+      { text: "Obtain the client's daily weight each morning before breakfast using the same scale, and record intake and output accurately", correct: true },
+      { text: "Assess the client's lung sounds every 4 hours and report any crackles", correct: false },
+      { text: "Determine if the client's current fluid intake is appropriate for their restriction", correct: false },
+      { text: "Evaluate whether the client's peripheral edema has improved since yesterday", correct: false },
+    ],
+    rationale: "UAPs can perform routine, standardized tasks: weighing clients (same time, same scale, same clothing) and recording I&O are within UAP scope for a STABLE client. Assessing lung sounds requires auscultation skills and clinical judgment (RN only). Determining fluid appropriateness requires clinical judgment about the fluid restriction (RN only). Evaluating edema changes requires clinical assessment and comparison (RN only). Remember: UAPs can collect data, but the RN must assess, evaluate, and make clinical judgments."
+  },
+  // ===== PERIPHERAL VASCULAR DISEASE (51-56) =====
+  {
+    id: 51,
+    type: "sata",
+    category: "Peripheral Arterial Disease",
+    stem: "A nurse is assessing a client with suspected peripheral arterial disease (PAD). Which findings are consistent with arterial insufficiency? Select all that apply.",
+    options: [
+      { text: "Intermittent claudication (pain with ambulation relieved by rest)", correct: true },
+      { text: "Pallor of the affected extremity when elevated", correct: true },
+      { text: "Diminished or absent peripheral pulses", correct: true },
+      { text: "Cool temperature of the affected extremity (poikilothermia)", correct: true },
+      { text: "Brown discoloration around the ankles with weeping ulcers", correct: false },
+      { text: "Paresthesia (burning/prickling sensation)", correct: true },
+    ],
+    rationale: "The 6 P's of arterial insufficiency: Pain (claudication), Pallor, Pulselessness (diminished pulses), Paresthesia (burning/prickling), Paralysis, and Poikilothermia (coolness). Brown discoloration around ankles with weeping ulcers is characteristic of VENOUS insufficiency, not arterial. Arterial ulcers are typically well-defined, painful, and found on toes/feet, while venous ulcers are irregular, shallow, and found around the ankles with brown hemosiderin staining."
+  },
+  {
+    id: 52,
+    type: "matrix",
+    category: "PAD Discharge Teaching",
+    stem: "A nurse is doing discharge teaching for a client with peripheral arterial disease. For each client statement, indicate whether the teaching was Effective or Ineffective.",
+    rows: [
+      { text: "\"I will use a heating pad when my legs feel cold.\"", correctAnswer: "Ineffective" },
+      { text: "\"I will keep my home comfortably warm and wear insulated socks.\"", correctAnswer: "Effective" },
+      { text: "\"I will perform daily skin care and apply moisturizing lotion to my legs.\"", correctAnswer: "Effective" },
+      { text: "\"I will wear compression stockings to improve my circulation.\"", correctAnswer: "Ineffective" },
+      { text: "\"I will avoid going barefoot and wear well-fitting shoes.\"", correctAnswer: "Effective" },
+      { text: "\"I will elevate my legs above my heart while sleeping to reduce swelling.\"", correctAnswer: "Ineffective" },
+    ],
+    columns: ["Effective", "Ineffective"],
+    rationale: "Heating pads are CONTRAINDICATED in PAD because decreased sensitivity can lead to burns. Keeping the environment warm with insulated socks is appropriate (indirect warming). Daily skin care with moisturizer prevents drying/cracking that leads to infection (correct). Compression stockings are CONTRAINDICATED in PAD because they restrict already-impaired arterial flow. Well-fitting shoes prevent injury that could lead to gangrene (correct). Elevating legs ABOVE the heart is contraindicated because extreme elevation slows arterial blood flow to feet—legs can be elevated but not above heart level."
+  },
+  {
+    id: 53,
+    type: "case_mc",
+    category: "PAD Management",
+    stem: "A client with peripheral arterial disease asks why they were told to stop smoking. The nurse's BEST response is:",
+    options: [
+      { text: "\"Nicotine causes vasoconstriction, which further narrows your already-compromised arteries and reduces blood flow to your legs and feet.\"", correct: true },
+      { text: "\"Smoking is generally bad for your overall health, so everyone should quit.\"", correct: false },
+      { text: "\"Smoking will cause your blood pressure medication to stop working.\"", correct: false },
+      { text: "\"Smoking only affects your lungs, but quitting is still a good idea.\"", correct: false },
+    ],
+    rationale: "The nurse should explain the SPECIFIC connection between smoking and PAD: nicotine causes vasoconstriction, which narrows already-compromised arteries, further reducing blood flow to extremities. This can worsen claudication, accelerate disease progression, and increase risk of amputation. A general statement about health doesn't educate about the PAD-specific mechanism. Smoking doesn't directly inactivate BP medications. Smoking absolutely affects the vascular system, not just the lungs."
+  },
+  {
+    id: 54,
+    type: "case_mc",
+    category: "Arterial vs Venous",
+    stem: "A nurse is assessing two clients: Client A has a painful, well-demarcated ulcer on the tip of the right great toe with shiny, pale surrounding skin. Client B has a shallow, irregularly shaped ulcer above the left medial malleolus with brownish skin discoloration. The nurse recognizes:",
+    options: [
+      { text: "Client A has an arterial ulcer and Client B has a venous ulcer", correct: true },
+      { text: "Both clients have arterial ulcers at different stages", correct: false },
+      { text: "Client A has a venous ulcer and Client B has an arterial ulcer", correct: false },
+      { text: "Both clients have venous ulcers with different presentations", correct: false },
+    ],
+    rationale: "Arterial ulcers: painful, well-demarcated, found on toes/feet/pressure points, with pale/shiny surrounding skin due to poor arterial blood flow. Venous ulcers: shallow, irregular borders, found around the medial malleolus/ankle area, with brownish hemosiderin staining from chronic venous insufficiency. Differentiating these is critical because treatments differ—arterial disease focuses on improving blood flow, while venous disease focuses on compression and elevation."
+  },
+  {
+    id: 55,
+    type: "case_mc",
+    category: "PAD Prioritization",
+    stem: "A nurse is assessing a client 4 hours post-femoral-popliteal bypass surgery. The nurse notes the right foot is cool, pale, and has no palpable dorsalis pedis pulse. The client reports severe pain in the foot. The nurse's FIRST action should be:",
+    options: [
+      { text: "Notify the surgeon immediately, as these findings suggest graft occlusion threatening limb viability", correct: true },
+      { text: "Elevate the extremity above heart level and apply a warm blanket", correct: false },
+      { text: "Administer the PRN pain medication and reassess in 30 minutes", correct: false },
+      { text: "Document the findings and continue routine postoperative monitoring", correct: false },
+    ],
+    rationale: "A cool, pale, pulseless foot with severe pain after vascular bypass surgery = acute graft occlusion until proven otherwise. This is a SURGICAL EMERGENCY—the limb is at risk for irreversible ischemia if blood flow is not restored quickly. The surgeon must be notified IMMEDIATELY. Elevating above heart level would WORSEN arterial flow. Pain medication alone doesn't address the underlying emergency. Simply documenting delays life- and limb-saving intervention. Remember: the 6 P's of arterial insufficiency indicate a vascular emergency."
+  },
+  {
+    id: 56,
+    type: "sata",
+    category: "PAD Teaching",
+    stem: "A nurse is developing a teaching plan for a client with PAD. Which instructions should the nurse include? Select all that apply.",
+    options: [
+      { text: "Avoid crossing the legs while sitting", correct: true },
+      { text: "Avoid nicotine, caffeine, and excessive stress", correct: true },
+      { text: "Wash legs and feet daily with warm water and mild soap, pat dry thoroughly", correct: true },
+      { text: "Use a bed cradle to keep sheets off the legs and feet", correct: true },
+      { text: "Apply compression stockings daily to improve arterial circulation", correct: false },
+      { text: "Apply direct heat with a heating pad when extremities feel cold", correct: false },
+    ],
+    rationale: "PAD teaching includes: avoid crossing legs (compresses arteries), avoid vasoconstrictors (nicotine, caffeine, stress), daily gentle skin care with warm (not hot) water and thorough drying, and use of bed cradle (even sheet pressure can damage compromised skin). Compression stockings are CONTRAINDICATED—they restrict arterial flow. Direct heat application is CONTRAINDICATED due to decreased sensation, risk of burns. Use indirect warming (warm environment, insulated socks) instead."
+  },
+  // ===== DIAGNOSTIC TESTS & PROCEDURES (57-60) =====
+  {
+    id: 57,
+    type: "sata",
+    category: "Cardiac Catheterization",
+    stem: "A nurse is caring for a client who has just returned from cardiac catheterization via the right femoral artery. Which nursing interventions are appropriate in the immediate post-procedure period? Select all that apply.",
+    options: [
+      { text: "Monitor the catheter insertion site for bleeding and hematoma formation", correct: true },
+      { text: "Keep the affected extremity straight and immobilized as ordered", correct: true },
+      { text: "Assess peripheral pulses, sensation, and skin color of the affected extremity", correct: true },
+      { text: "Encourage the client to ambulate within 1 hour to prevent blood clots", correct: false },
+      { text: "Monitor vital signs frequently per facility protocol", correct: true },
+      { text: "Maintain bed rest with head of bed elevated no more than 30 degrees as ordered", correct: true },
+    ],
+    rationale: "Post-cardiac catheterization (femoral approach): monitor insertion site for bleeding/hematoma (major complication), keep extremity straight and immobilized to prevent bleeding, assess distal pulses and circulation (watch for signs of embolus or arterial occlusion), frequent vital signs, and maintain bed rest with limited HOB elevation. Early ambulation within 1 hour is CONTRAINDICATED—clients typically remain on bed rest for 2-6 hours post-procedure to allow the arterial puncture site to seal and prevent hemorrhage."
+  },
+  {
+    id: 58,
+    type: "case_mc",
+    category: "Cardiac Stress Test",
+    stem: "A nurse is preparing a client for a cardiac stress test scheduled for tomorrow morning. Which pre-procedure instruction is MOST important?",
+    options: [
+      { text: "Refrain from caffeine, tobacco, and cardiac medications on the day of the test, and remain NPO for 2-4 hours prior", correct: true },
+      { text: "Eat a large breakfast the morning of the test for adequate energy", correct: false },
+      { text: "Take all cardiac medications as usual on the morning of the test", correct: false },
+      { text: "Perform vigorous exercise the evening before to prepare the heart", correct: false },
+    ],
+    rationale: "Cardiac stress test preparation: NPO for 2-4 hours before, no caffeine or tobacco (these affect heart rate and can skew results), and typically cardiac medications are held on test day (they can mask exercise-induced cardiac changes). The client should get adequate REST the night before. A large breakfast would cause discomfort during exercise and interfere with results. Vigorous pre-exercise is not recommended. During the test, the goal is to increase HR to 80-90% of maximum to evaluate cardiac function under stress."
+  },
+  {
+    id: 59,
+    type: "case_mc",
+    category: "Post-Procedure Complications",
+    stem: "A client returns from cardiac catheterization and the nurse notes a rapidly expanding hematoma at the right femoral insertion site with a BP dropping from 130/78 to 98/60. The nurse's FIRST action is to:",
+    options: [
+      { text: "Apply firm, direct pressure to the femoral site and call for immediate assistance", correct: true },
+      { text: "Elevate the head of the bed to 45 degrees and administer oxygen", correct: false },
+      { text: "Apply an ice pack to the hematoma and continue monitoring", correct: false },
+      { text: "Document the findings and obtain a complete blood count", correct: false },
+    ],
+    rationale: "A rapidly expanding hematoma with dropping BP indicates HEMORRHAGE at the catheterization site—a life-threatening emergency. FIRST action: apply firm, direct pressure to stop the bleeding and call for help. This is a circulatory emergency (ABCs—Circulation). Elevating HOB doesn't address the bleeding. An ice pack alone won't control arterial hemorrhage. Documentation and lab work are important but come AFTER controlling the hemorrhage. This is a direct application of emergency care procedures for complications of diagnostic procedures."
+  },
+  {
+    id: 60,
+    type: "matrix",
+    category: "Diagnostic Tests",
+    stem: "A nurse is reviewing orders and preparing multiple clients for cardiac diagnostic testing. For each nursing action, choose whether it is Indicated, Nonessential, or Contraindicated.",
+    rows: [
+      { text: "Allowing water intake during the 12-hour fast before a fasting lipid panel", correctAnswer: "Indicated" },
+      { text: "Instructing a client to lie on their left side and remain still during an echocardiogram", correctAnswer: "Indicated" },
+      { text: "Administering dobutamine for a pharmacologic stress test in a client unable to exercise", correctAnswer: "Indicated" },
+      { text: "Allowing a post-cardiac catheterization client to sit upright at 90 degrees immediately", correctAnswer: "Contraindicated" },
+      { text: "Withholding food for 12 hours before a BNP blood draw", correctAnswer: "Nonessential" },
+      { text: "Instructing the stress test client to avoid caffeine and tobacco on the day of the test", correctAnswer: "Indicated" },
+      { text: "Having the client perform vigorous exercise the night before a stress test to 'warm up'", correctAnswer: "Contraindicated" },
+      { text: "Providing a pamphlet about heart-healthy recipes while the client waits for echocardiogram results", correctAnswer: "Nonessential" },
+    ],
+    columns: ["Indicated", "Nonessential", "Contraindicated"],
+    rationale: "Water is permissible during a fasting lipid panel (only food is restricted). Left side positioning and remaining still is correct for echocardiogram. Dobutamine is the standard pharmacologic agent for stress testing in clients who cannot exercise. Sitting at 90 degrees immediately post-cardiac cath is CONTRAINDICATED—HOB should be ≤30 degrees during bed rest to prevent hemorrhage from the arterial puncture site. BNP does NOT require fasting—it's a simple blood draw done anytime, so withholding food is NONESSENTIAL (not harmful but unnecessary). Avoiding caffeine and tobacco before stress testing is INDICATED as they can skew results. Vigorous exercise before the test is CONTRAINDICATED—the client should rest the night before. A recipe pamphlet during wait time is NONESSENTIAL—nice for health promotion but not necessary for the diagnostic procedure."
+  },
+  // ===== NEW 3-COLUMN INDICATED / NONESSENTIAL / CONTRAINDICATED MATRICES (61-68) =====
+  {
+    id: 61,
+    type: "matrix",
+    category: "Hypertensive Crisis",
+    stem: "A 55-year-old client arrives at the emergency department with BP 232/140 mmHg, severe headache, epistaxis, and confusion. The nurse is prioritizing interventions. For each nursing action, indicate whether it is Indicated, Nonessential, or Contraindicated.",
+    rows: [
+      { text: "Place the client in semi-Fowler's position", correctAnswer: "Indicated" },
+      { text: "Obtain two large-bore IV accesses immediately", correctAnswer: "Indicated" },
+      { text: "Administer IV antihypertensive to rapidly lower BP to 120/80 within 30 minutes", correctAnswer: "Contraindicated" },
+      { text: "Apply continuous cardiac monitoring", correctAnswer: "Indicated" },
+      { text: "Offer the client a menu to select dinner preferences", correctAnswer: "Nonessential" },
+      { text: "Monitor urine output hourly (target >30 mL/hr)", correctAnswer: "Indicated" },
+      { text: "Apply supplemental oxygen if pulse oximetry shows hypoxemia", correctAnswer: "Indicated" },
+      { text: "Administer a scheduled statin medication at this time", correctAnswer: "Nonessential" },
+    ],
+    columns: ["Indicated", "Nonessential", "Contraindicated"],
+    rationale: "Semi-Fowler's position reduces preload and is standard for hypertensive crisis (INDICATED). Two large-bore IVs are essential for emergent IV antihypertensive administration (INDICATED). Rapidly lowering BP to 120/80 in 30 minutes is CONTRAINDICATED—gradual reduction is required to prevent cerebral ischemia, MI, and renal failure. Continuous cardiac monitoring detects dysrhythmias from BP changes (INDICATED). Dinner menu selection is NONESSENTIAL during a medical emergency. Hourly urine output monitoring assesses kidney perfusion; <30 mL/hr suggests kidney injury (INDICATED). O2 if hypoxemic is always indicated. A scheduled statin is NONESSENTIAL during the acute crisis—it's a maintenance medication that can wait until the patient is stabilized."
+  },
+  {
+    id: 62,
+    type: "matrix",
+    category: "Heart Failure Management",
+    stem: "A client is admitted with acute decompensated heart failure. Current vitals: BP 148/92, HR 108, RR 28, SpO2 88%, bilateral crackles, +3 pitting edema, BNP 1450 pg/mL. The nurse is implementing the initial plan of care. For each action, choose Indicated, Nonessential, or Contraindicated.",
+    rows: [
+      { text: "Position client in high Fowler's and apply oxygen", correctAnswer: "Indicated" },
+      { text: "Administer IV furosemide as ordered", correctAnswer: "Indicated" },
+      { text: "Encourage the client to drink 2-3 liters of water daily to stay hydrated", correctAnswer: "Contraindicated" },
+      { text: "Obtain daily weight tomorrow morning before breakfast", correctAnswer: "Indicated" },
+      { text: "Apply sequential compression devices (SCDs) to lower extremities", correctAnswer: "Nonessential" },
+      { text: "Initiate strict intake and output monitoring", correctAnswer: "Indicated" },
+      { text: "Administer IV normal saline bolus 1000 mL for low urine output", correctAnswer: "Contraindicated" },
+      { text: "Teach the client about sodium-restricted diet before discharge", correctAnswer: "Nonessential" },
+    ],
+    columns: ["Indicated", "Nonessential", "Contraindicated"],
+    rationale: "High Fowler's with O2 is INDICATED—reduces preload and improves oxygenation (SpO2 88% = hypoxemic). IV furosemide removes excess fluid (INDICATED). Encouraging 2-3L fluid intake is CONTRAINDICATED—HF patients need fluid RESTRICTION because the failing heart cannot handle additional volume. Daily weights are the best indicator of fluid status (INDICATED). SCDs are NONESSENTIAL—while they prevent DVT, they are not the priority intervention for acute decompensated HF and could worsen discomfort. Strict I&O is essential to track fluid balance (INDICATED). A normal saline bolus is CONTRAINDICATED—this client is already fluid overloaded (crackles, edema, high BNP); adding more fluid worsens pulmonary edema. Diet teaching is important but NONESSENTIAL during the acute crisis—it should happen at discharge, not during acute stabilization."
+  },
+  {
+    id: 63,
+    type: "matrix",
+    category: "PAD Interventions",
+    stem: "A client with peripheral arterial disease (PAD) in the lower extremities is being admitted for worsening claudication. Pedal pulses are weak, ABI is 0.6, and the feet appear pale and cool. For each planned intervention, indicate whether it is Indicated, Nonessential, or Contraindicated.",
+    rows: [
+      { text: "Keep the environment comfortably warm and provide insulated socks", correctAnswer: "Indicated" },
+      { text: "Apply knee-high compression stockings to improve circulation", correctAnswer: "Contraindicated" },
+      { text: "Perform daily foot and leg assessment including skin inspection", correctAnswer: "Indicated" },
+      { text: "Elevate legs above the level of the heart on two pillows while sleeping", correctAnswer: "Contraindicated" },
+      { text: "Apply a heating pad directly to the feet to relieve coolness", correctAnswer: "Contraindicated" },
+      { text: "Encourage smoking cessation and provide referral to cessation program", correctAnswer: "Indicated" },
+      { text: "Provide a bed cradle to keep linens off the extremities", correctAnswer: "Indicated" },
+      { text: "Apply a decorative room air freshener near the bedside", correctAnswer: "Nonessential" },
+    ],
+    columns: ["Indicated", "Nonessential", "Contraindicated"],
+    rationale: "Warm environment with insulated socks provides indirect warmth safely (INDICATED). Compression stockings are CONTRAINDICATED in PAD—they restrict already-impaired arterial blood flow. Daily foot/leg assessment catches early skin changes before ulceration (INDICATED). Elevating above heart level is CONTRAINDICATED—extreme elevation further reduces arterial flow to feet; legs may be elevated slightly but never above heart level. Direct heat (heating pads) is CONTRAINDICATED due to decreased sensation → burn risk. Smoking cessation is INDICATED—nicotine causes vasoconstriction, worsening PAD. A bed cradle prevents even sheet pressure on compromised skin (INDICATED). An air freshener is NONESSENTIAL—it doesn't affect PAD care positively or negatively."
+  },
+  {
+    id: 64,
+    type: "matrix",
+    category: "Post-MI Management",
+    stem: "A client is 24 hours post-STEMI and has undergone successful PCI with stent placement. Current vitals are stable: BP 122/74, HR 72, SpO2 97%. The nurse is reviewing the ongoing plan of care. For each intervention, choose Indicated, Nonessential, or Contraindicated.",
+    rows: [
+      { text: "Continue dual antiplatelet therapy (aspirin + clopidogrel)", correctAnswer: "Indicated" },
+      { text: "Initiate high-intensity statin therapy for plaque stabilization", correctAnswer: "Indicated" },
+      { text: "Administer ibuprofen 800 mg PO for the client's reported headache", correctAnswer: "Contraindicated" },
+      { text: "Begin cardiac rehabilitation education and planning", correctAnswer: "Indicated" },
+      { text: "Provide a stool softener to prevent straining", correctAnswer: "Indicated" },
+      { text: "Encourage the client to return to vigorous weight lifting within one week", correctAnswer: "Contraindicated" },
+      { text: "Arrange for a chaplain visit per the client's request", correctAnswer: "Nonessential" },
+      { text: "Initiate ACE inhibitor for ventricular remodeling prevention", correctAnswer: "Indicated" },
+    ],
+    columns: ["Indicated", "Nonessential", "Contraindicated"],
+    rationale: "Dual antiplatelet therapy is INDICATED post-PCI/stent to prevent stent thrombosis. High-intensity statins stabilize plaque and reduce long-term mortality (INDICATED—the S² in THROMBINS²). Ibuprofen (NSAID) is CONTRAINDICATED post-MI—NSAIDs increase cardiovascular risk, interfere with aspirin's antiplatelet effect, and cause sodium/water retention. Cardiac rehab education is INDICATED for secondary prevention. A stool softener prevents straining/Valsalva that increases cardiac workload (INDICATED). Vigorous weight lifting within one week is CONTRAINDICATED—it dramatically increases afterload and cardiac demand; activity should be gradually increased per cardiac rehab guidelines. A chaplain visit supports psychosocial needs but is NONESSENTIAL to medical management. ACE inhibitors prevent ventricular remodeling post-MI (INDICATED—the R in THROMBINS²)."
+  },
+  {
+    id: 65,
+    type: "matrix",
+    category: "Pulmonary Edema Emergency",
+    stem: "A client with heart failure suddenly develops severe dyspnea, pink frothy sputum, SpO2 80%, HR 128, BP 92/58, and extreme anxiety. The nurse recognizes acute pulmonary edema. For each intervention, choose Indicated, Nonessential, or Contraindicated.",
+    rows: [
+      { text: "Position client upright in high Fowler's with legs dangling over the bedside", correctAnswer: "Indicated" },
+      { text: "Apply high-flow oxygen immediately", correctAnswer: "Indicated" },
+      { text: "Administer IV furosemide as ordered to reduce fluid overload", correctAnswer: "Indicated" },
+      { text: "Place the client flat in Trendelenburg position to increase venous return", correctAnswer: "Contraindicated" },
+      { text: "Administer IV morphine for anxiety and preload reduction", correctAnswer: "Indicated" },
+      { text: "Request the client complete a fall risk assessment questionnaire", correctAnswer: "Nonessential" },
+      { text: "Obtain a 12-lead ECG to evaluate cardiac rhythm", correctAnswer: "Indicated" },
+      { text: "Encourage the client to drink clear fluids to prevent dehydration", correctAnswer: "Contraindicated" },
+    ],
+    columns: ["Indicated", "Nonessential", "Contraindicated"],
+    rationale: "High Fowler's with dangling legs reduces preload by pooling blood in lower extremities and improves lung expansion (INDICATED). High-flow O2 is essential with SpO2 80% (INDICATED). IV furosemide removes excess fluid causing the pulmonary edema (INDICATED). Trendelenburg is CONTRAINDICATED—it increases venous return, worsening pulmonary congestion and flooding the already-compromised lungs. IV morphine reduces anxiety and sympathetic stimulation while decreasing preload (INDICATED). A fall risk questionnaire during an acute emergency is NONESSENTIAL—patient safety is important but paper assessments can wait until stabilized. A 12-lead ECG evaluates for MI or dysrhythmia as the cause (INDICATED). Encouraging fluids is CONTRAINDICATED—this client is in fluid overload; additional fluid worsens pulmonary edema."
+  },
+  {
+    id: 66,
+    type: "matrix",
+    category: "Cardiogenic Shock",
+    stem: "A client develops cardiogenic shock 8 hours post-MI. Vitals: BP 74/42, HR 124, SpO2 86%, urine output 10 mL/hr, cool/clammy skin, altered mental status. The nurse is implementing emergency interventions. For each action, choose Indicated, Nonessential, or Contraindicated.",
+    rows: [
+      { text: "Administer high-flow oxygen and prepare for possible intubation", correctAnswer: "Indicated" },
+      { text: "Initiate vasopressor/inotropic support as ordered (e.g., dobutamine, dopamine)", correctAnswer: "Indicated" },
+      { text: "Administer IV metoprolol to control the tachycardia", correctAnswer: "Contraindicated" },
+      { text: "Insert a Foley catheter for accurate hourly urine output monitoring", correctAnswer: "Indicated" },
+      { text: "Administer a large IV fluid bolus of 2 liters normal saline", correctAnswer: "Contraindicated" },
+      { text: "Update the client's emergency contact information in the chart", correctAnswer: "Nonessential" },
+      { text: "Continuously monitor BP, HR, SpO2, and cardiac rhythm", correctAnswer: "Indicated" },
+      { text: "Prepare the client for possible emergent cardiac catheterization/intervention", correctAnswer: "Indicated" },
+    ],
+    columns: ["Indicated", "Nonessential", "Contraindicated"],
+    rationale: "High-flow O2 with intubation preparation is INDICATED—SpO2 86% with shock requires aggressive oxygenation. Vasopressors/inotropes (dobutamine, dopamine) improve cardiac output and BP (INDICATED). IV metoprolol is CONTRAINDICATED—the tachycardia is COMPENSATORY; the heart is beating fast to maintain cardiac output. Blocking this with a beta-blocker could cause cardiovascular collapse. A Foley catheter allows precise hourly urine monitoring, the best indicator of organ perfusion (INDICATED). A large fluid bolus is CONTRAINDICATED—cardiogenic shock is a PUMP failure, not a volume problem; excess fluid worsens pulmonary edema. Updating contact info is NONESSENTIAL during an acute emergency. Continuous hemodynamic monitoring is essential in shock (INDICATED). Emergent PCI/cath may restore coronary blood flow and improve pump function (INDICATED)."
+  },
+  {
+    id: 67,
+    type: "matrix",
+    category: "HTN Medication Management",
+    stem: "A nurse is reviewing the medication administration record for a client with a history of hypertension, type 2 diabetes, chronic kidney disease, and asthma. Current vitals: BP 146/88, HR 76, K+ 5.8 mEq/L, creatinine 2.4 mg/dL. For each medication, choose Indicated, Nonessential, or Contraindicated.",
+    rows: [
+      { text: "Amlodipine 5 mg PO (calcium channel blocker)", correctAnswer: "Indicated" },
+      { text: "Propranolol 40 mg PO (nonselective beta-blocker)", correctAnswer: "Contraindicated" },
+      { text: "Spironolactone 25 mg PO (potassium-sparing diuretic)", correctAnswer: "Contraindicated" },
+      { text: "Hydrochlorothiazide 25 mg PO (thiazide diuretic)", correctAnswer: "Indicated" },
+      { text: "Acetaminophen 650 mg PO for mild headache", correctAnswer: "Nonessential" },
+      { text: "Daily multivitamin with iron", correctAnswer: "Nonessential" },
+    ],
+    columns: ["Indicated", "Nonessential", "Contraindicated"],
+    rationale: "Amlodipine (CCB) is INDICATED—it lowers BP by relaxing vascular smooth muscle and is safe in asthma and CKD. Propranolol (nonselective beta-blocker) is CONTRAINDICATED—it blocks beta-2 receptors in the lungs, causing bronchoconstriction in asthma patients. Spironolactone (potassium-sparing diuretic) is CONTRAINDICATED—K+ is already 5.8 (hyperkalemia!); spironolactone retains potassium, risking life-threatening cardiac arrhythmias. Hydrochlorothiazide (thiazide diuretic) is INDICATED—it helps lower BP and can help excrete potassium. Acetaminophen for a mild headache is NONESSENTIAL to the cardiovascular plan of care (safe but not priority). A daily multivitamin is NONESSENTIAL to BP management."
+  },
+  {
+    id: 68,
+    type: "matrix",
+    category: "Post-Cardiac Cath",
+    stem: "A client returns to the unit after cardiac catheterization via the right femoral artery. The arterial sheath has been removed and a pressure dressing is in place. Current vitals: BP 132/78, HR 74, SpO2 98%. For each nursing action, choose Indicated, Nonessential, or Contraindicated.",
+    rows: [
+      { text: "Assess the pressure dressing and insertion site for bleeding or hematoma every 15 minutes", correctAnswer: "Indicated" },
+      { text: "Keep the right leg straight and immobilized for the ordered duration", correctAnswer: "Indicated" },
+      { text: "Encourage the client to flex and bend the right leg to prevent stiffness", correctAnswer: "Contraindicated" },
+      { text: "Assess right dorsalis pedis and posterior tibial pulses, color, sensation, and temperature", correctAnswer: "Indicated" },
+      { text: "Assist client to ambulate to the bathroom within 30 minutes of return", correctAnswer: "Contraindicated" },
+      { text: "Encourage oral fluid intake to help flush the contrast dye through the kidneys", correctAnswer: "Indicated" },
+      { text: "Provide a magazine for the client to read during bed rest", correctAnswer: "Nonessential" },
+      { text: "Offer a warm blanket for comfort", correctAnswer: "Nonessential" },
+    ],
+    columns: ["Indicated", "Nonessential", "Contraindicated"],
+    rationale: "Frequent site assessment for bleeding/hematoma is the highest priority post-cath intervention (INDICATED). Keeping the leg straight and immobilized prevents disruption of the arterial seal (INDICATED). Flexing or bending the affected leg is CONTRAINDICATED—it can dislodge the clot at the puncture site and cause hemorrhage. Assessing distal pulses and circulation checks for embolus or arterial occlusion (INDICATED). Early ambulation within 30 minutes is CONTRAINDICATED—clients typically remain on bed rest 2-6 hours to allow the puncture site to seal. Encouraging fluids helps the kidneys flush contrast dye, preventing contrast-induced nephropathy (INDICATED). A magazine during bed rest is NONESSENTIAL—nice for comfort but not medically necessary. A warm blanket is NONESSENTIAL—promotes comfort but doesn't affect medical outcome."
+  },
+];
+
+// Fisher-Yates shuffle for options with correct tracking
+function prepareQuestions(questions) {
+  return questions.map(q => {
+    if (q.type === "matrix") return q;
+    const indexed = q.options.map((o, i) => ({ ...o, origIdx: i }));
+    const shuffled = shuffleArray(indexed);
+    return { ...q, options: shuffled };
+  });
+}
+
+const CATEGORIES = [...new Set(QUESTIONS.map(q => q.category))];
+
+function PerfusionExam() {
+  const [screen, setScreen] = useState("start");
+  const [questions, setQuestions] = useState([]);
+  const [currentQ, setCurrentQ] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [submitted, setSubmitted] = useState({});
+  const [score, setScore] = useState(0);
+  const [showRationale, setShowRationale] = useState({});
+  const [matrixAnswers, setMatrixAnswers] = useState({});
+  const [timeElapsed, setTimeElapsed] = useState(0);
+  const [timerActive, setTimerActive] = useState(false);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    if (timerActive) {
+      timerRef.current = setInterval(() => setTimeElapsed(t => t + 1), 1000);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [timerActive]);
+
+  const startExam = () => {
+    setQuestions(prepareQuestions(QUESTIONS));
+    setAnswers({});
+    setSubmitted({});
+    setScore(0);
+    setShowRationale({});
+    setMatrixAnswers({});
+    setCurrentQ(0);
+    setTimeElapsed(0);
+    setTimerActive(true);
+    setScreen("exam");
+  };
+
+  const formatTime = (s) => {
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    return `${h > 0 ? h + ':' : ''}${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+  };
+
+  const q = questions[currentQ];
+
+  const handleMCSelect = (idx) => {
+    if (submitted[currentQ]) return;
+    setAnswers({ ...answers, [currentQ]: idx });
+  };
+
+  const handleSATAToggle = (idx) => {
+    if (submitted[currentQ]) return;
+    const prev = answers[currentQ] || [];
+    const next = prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx];
+    setAnswers({ ...answers, [currentQ]: next });
+  };
+
+  const handleMatrixSelect = (rowIdx, col) => {
+    if (submitted[currentQ]) return;
+    const key = `${currentQ}-${rowIdx}`;
+    setMatrixAnswers({ ...matrixAnswers, [key]: col });
+  };
+
+  const submitAnswer = () => {
+    if (submitted[currentQ]) return;
+    let correct = false;
+    if (q.type === "case_mc") {
+      const selectedOpt = q.options[answers[currentQ]];
+      correct = selectedOpt && selectedOpt.correct;
+    } else if (q.type === "sata") {
+      const selected = answers[currentQ] || [];
+      const correctIdxs = q.options.map((o, i) => o.correct ? i : -1).filter(i => i !== -1);
+      correct = selected.length === correctIdxs.length && correctIdxs.every(i => selected.includes(i));
+    } else if (q.type === "matrix") {
+      const allCorrect = q.rows.every((row, ri) => {
+        return matrixAnswers[`${currentQ}-${ri}`] === row.correctAnswer;
+      });
+      correct = allCorrect;
+    }
+    if (correct) setScore(s => s + 1);
+    setSubmitted({ ...submitted, [currentQ]: true });
+    setShowRationale({ ...showRationale, [currentQ]: true });
+  };
+
+  const canSubmit = () => {
+    if (!q) return false;
+    if (q.type === "case_mc") return answers[currentQ] !== undefined;
+    if (q.type === "sata") return (answers[currentQ] || []).length > 0;
+    if (q.type === "matrix") return q.rows.every((_, ri) => matrixAnswers[`${currentQ}-${ri}`] !== undefined);
+    return false;
+  };
+
+  const finishExam = () => {
+    setTimerActive(false);
+    setScreen("results");
+  };
+
+  const totalAnswered = Object.keys(submitted).length;
+  const pct = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
+
+  // EKG line SVG
+  const EKGLine = ({ color = "#ff4d6d", width = "100%", height = 40, speed = "3s" }) => (
+    <svg width={width} height={height} viewBox="0 0 600 40" preserveAspectRatio="none" style={{ display: "block", overflow: "visible" }}>
+      <defs>
+        <linearGradient id="ekgGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor={color} stopOpacity="0" />
+          <stop offset="50%" stopColor={color} stopOpacity="1" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M0,20 L100,20 L120,20 L140,5 L160,35 L180,2 L200,38 L220,20 L240,20 L400,20 L420,20 L440,5 L460,35 L480,2 L500,38 L520,20 L600,20"
+        fill="none"
+        stroke="url(#ekgGrad)"
+        strokeWidth="2"
+        style={{ animation: `ekgPulse ${speed} ease-in-out infinite` }}
+      />
+    </svg>
+  );
+
+  // ===== START SCREEN =====
+  if (screen === "start") {
+    return (
+      <div style={styles.container}>
+        <style>{globalCSS}</style>
+        <div style={styles.startCard}>
+          <div style={styles.heartbeatIcon}>
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <defs>
+                <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#ff4d6d" />
+                  <stop offset="100%" stopColor="#c9184a" />
+                </linearGradient>
+              </defs>
+              <path d="M40 68 C20 50 5 38 5 24 C5 14 13 6 23 6 C30 6 36 10 40 16 C44 10 50 6 57 6 C67 6 75 14 75 24 C75 38 60 50 40 68Z"
+                fill="url(#heartGrad)" style={{ animation: "heartPulse 1.2s ease-in-out infinite" }} />
+            </svg>
+          </div>
+          <EKGLine />
+          <h1 style={styles.title}>HCC2 PERFUSION</h1>
+          <h2 style={styles.subtitle}>Module Mock Exam</h2>
+          <div style={styles.examInfo}>
+            <div style={styles.infoItem}><span style={styles.infoLabel}>Questions</span><span style={styles.infoValue}>68</span></div>
+            <div style={styles.infoDivider} />
+            <div style={styles.infoItem}><span style={styles.infoLabel}>Types</span><span style={styles.infoValue}>MC · SATA · Matrix</span></div>
+            <div style={styles.infoDivider} />
+            <div style={styles.infoItem}><span style={styles.infoLabel}>Level</span><span style={styles.infoValue}>Application</span></div>
+          </div>
+          <div style={styles.topicList}>
+            <p style={styles.topicHeader}>Topics Covered</p>
+            <div style={styles.topicGrid}>
+              {["Hypertension & Crisis", "Atherosclerosis & Lipids", "Coronary Artery Disease", "Acute Coronary Syndrome", "Heart Failure", "Cardiogenic Shock", "Peripheral Vascular Disease", "Cardiac Diagnostics", "Pharmacology", "Delegation & Prioritization"].map(t => (
+                <span key={t} style={styles.topicTag}>{t}</span>
+              ))}
+            </div>
+          </div>
+          <button style={styles.startBtn} onClick={startExam}>
+            Begin Exam
+            <span style={{ marginLeft: 8 }}>→</span>
+          </button>
+          <EKGLine color="#6b2fa0" speed="4s" />
+        </div>
+      </div>
+    );
+  }
+
+  // ===== RESULTS SCREEN =====
+  if (screen === "results") {
+    const passed = pct >= 78;
+    const catScores = {};
+    questions.forEach((q, i) => {
+      if (!catScores[q.category]) catScores[q.category] = { correct: 0, total: 0 };
+      catScores[q.category].total++;
+      if (submitted[i]) {
+        let correct = false;
+        if (q.type === "case_mc") {
+          correct = q.options[answers[i]]?.correct;
+        } else if (q.type === "sata") {
+          const sel = answers[i] || [];
+          const correctIdxs = q.options.map((o, j) => o.correct ? j : -1).filter(j => j !== -1);
+          correct = sel.length === correctIdxs.length && correctIdxs.every(j => sel.includes(j));
+        } else if (q.type === "matrix") {
+          correct = q.rows.every((row, ri) => matrixAnswers[`${i}-${ri}`] === row.correctAnswer);
+        }
+        if (correct) catScores[q.category].correct++;
+      }
+    });
+
+    return (
+      <div style={styles.container}>
+        <style>{globalCSS}</style>
+        <div style={styles.resultsCard}>
+          <EKGLine color={passed ? "#00c853" : "#ff4d6d"} />
+          <h1 style={{ ...styles.title, fontSize: 28, marginTop: 16 }}>Exam Complete</h1>
+          <div style={{ ...styles.scoreCircle, borderColor: passed ? "#00c853" : "#ff4d6d" }}>
+            <span style={{ ...styles.scorePct, color: passed ? "#00c853" : "#ff4d6d" }}>{pct}%</span>
+            <span style={styles.scoreLabel}>{score} / {questions.length}</span>
+          </div>
+          <div style={{ ...styles.passLabel, background: passed ? "rgba(0,200,83,0.15)" : "rgba(255,77,109,0.15)", color: passed ? "#00c853" : "#ff4d6d" }}>
+            {passed ? "✓ PASSING (≥78%)" : "✗ Below Passing (<78%)"}
+          </div>
+          <p style={styles.timeResult}>Time: {formatTime(timeElapsed)}</p>
+
+          <div style={styles.catBreakdown}>
+            <p style={{ ...styles.topicHeader, marginBottom: 12 }}>Category Breakdown</p>
+            {Object.entries(catScores).map(([cat, data]) => {
+              const catPct = Math.round((data.correct / data.total) * 100);
+              return (
+                <div key={cat} style={styles.catRow}>
+                  <span style={styles.catName}>{cat}</span>
+                  <div style={styles.catBarOuter}>
+                    <div style={{ ...styles.catBarInner, width: `${catPct}%`, background: catPct >= 78 ? "#00c853" : catPct >= 60 ? "#ffa726" : "#ff4d6d" }} />
+                  </div>
+                  <span style={styles.catPct}>{data.correct}/{data.total}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div style={{ display: "flex", gap: 12, marginTop: 24, flexWrap: "wrap", justifyContent: "center" }}>
+            <button style={styles.startBtn} onClick={startExam}>Retake Exam</button>
+            <button style={{ ...styles.startBtn, background: "linear-gradient(135deg, #6b2fa0, #4a1d73)" }} onClick={() => { setScreen("exam"); setCurrentQ(0); }}>
+              Review Answers
+            </button>
+          </div>
+          <EKGLine color="#6b2fa0" speed="4s" />
+        </div>
+      </div>
+    );
+  }
+
+  // ===== EXAM SCREEN =====
+  if (!q) return null;
+
+  const isCorrectOption = (opt) => opt.correct;
+  const isSelectedOption = (idx) => {
+    if (q.type === "case_mc") return answers[currentQ] === idx;
+    if (q.type === "sata") return (answers[currentQ] || []).includes(idx);
+    return false;
+  };
+
+  const getOptionStyle = (opt, idx) => {
+    const selected = isSelectedOption(idx);
+    const isSubmitted = submitted[currentQ];
+    let bg = selected ? "rgba(139,92,246,0.15)" : "rgba(255,255,255,0.03)";
+    let border = selected ? "1px solid rgba(139,92,246,0.5)" : "1px solid rgba(255,255,255,0.08)";
+
+    if (isSubmitted) {
+      if (opt.correct) {
+        bg = "rgba(0,200,83,0.12)";
+        border = "1px solid rgba(0,200,83,0.5)";
+      } else if (selected && !opt.correct) {
+        bg = "rgba(255,77,109,0.12)";
+        border = "1px solid rgba(255,77,109,0.5)";
+      }
+    }
+    return { ...styles.optionBtn, background: bg, border };
+  };
+
+  const getMatrixCellStyle = (rowIdx, col) => {
+    const key = `${currentQ}-${rowIdx}`;
+    const selected = matrixAnswers[key] === col;
+    const isSubmitted = submitted[currentQ];
+    const isCorrect = q.rows[rowIdx].correctAnswer === col;
+
+    let bg = selected ? "rgba(139,92,246,0.25)" : "transparent";
+    let border = selected ? "2px solid rgba(139,92,246,0.6)" : "2px solid rgba(255,255,255,0.08)";
+
+    if (isSubmitted) {
+      if (isCorrect && selected) {
+        bg = "rgba(0,200,83,0.2)"; border = "2px solid rgba(0,200,83,0.6)";
+      } else if (!isCorrect && selected) {
+        bg = "rgba(255,77,109,0.2)"; border = "2px solid rgba(255,77,109,0.6)";
+      } else if (isCorrect && !selected) {
+        bg = "rgba(0,200,83,0.08)"; border = "2px solid rgba(0,200,83,0.3)";
+      }
+    }
+    return { ...styles.matrixCell, background: bg, border, cursor: isSubmitted ? "default" : "pointer" };
+  };
+
+  return (
+    <div style={styles.container}>
+      <style>{globalCSS}</style>
+      {/* Top bar */}
+      <div style={styles.topBar}>
+        <div style={styles.topBarLeft}>
+          <span style={styles.qCount}>Q {currentQ + 1}<span style={{ opacity: 0.4 }}> / {questions.length}</span></span>
+          <span style={styles.catBadge}>{q.category}</span>
+        </div>
+        <div style={styles.topBarRight}>
+          <span style={styles.timer}>{formatTime(timeElapsed)}</span>
+          <span style={styles.scoreSmall}>{score} correct</span>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div style={styles.progressOuter}>
+        <div style={{ ...styles.progressInner, width: `${((currentQ + 1) / questions.length) * 100}%` }} />
+      </div>
+
+      {/* Question */}
+      <div style={styles.questionCard}>
+        <div style={styles.qTypeBadge}>
+          {q.type === "case_mc" ? "Multiple Choice" : q.type === "sata" ? "Select All That Apply" : q.columns.length === 3 ? "Matrix — Indicated / Nonessential / Contraindicated" : q.columns[0] === "Effective" ? "Matrix — Effective / Ineffective" : "Matrix — Indicated / Contraindicated"}
+        </div>
+        <p style={styles.stemText}>{q.stem}</p>
+
+        {/* MC / SATA Options */}
+        {(q.type === "case_mc" || q.type === "sata") && (
+          <div style={styles.optionsContainer}>
+            {q.options.map((opt, idx) => (
+              <button
+                key={idx}
+                style={getOptionStyle(opt, idx)}
+                onClick={() => q.type === "case_mc" ? handleMCSelect(idx) : handleSATAToggle(idx)}
+              >
+                <span style={styles.optLetter}>
+                  {q.type === "sata" ? (
+                    <span style={{ ...styles.checkbox, ...(isSelectedOption(idx) ? styles.checkboxChecked : {}), ...(submitted[currentQ] && opt.correct ? { borderColor: "#00c853", background: "rgba(0,200,83,0.2)" } : {}), ...(submitted[currentQ] && isSelectedOption(idx) && !opt.correct ? { borderColor: "#ff4d6d", background: "rgba(255,77,109,0.2)" } : {}) }}>
+                      {isSelectedOption(idx) && "✓"}
+                    </span>
+                  ) : (
+                    String.fromCharCode(65 + idx)
+                  )}
+                </span>
+                <span style={styles.optText}>{opt.text}</span>
+                {submitted[currentQ] && opt.correct && <span style={styles.correctMark}>✓</span>}
+                {submitted[currentQ] && isSelectedOption(idx) && !opt.correct && <span style={styles.incorrectMark}>✗</span>}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Matrix */}
+        {q.type === "matrix" && (
+          <div style={styles.matrixContainer}>
+            <div style={styles.matrixHeader}>
+              <div style={styles.matrixRowLabel} />
+              {q.columns.map(col => (
+                <div key={col} style={styles.matrixColHeader}>{col}</div>
+              ))}
+            </div>
+            {q.rows.map((row, ri) => (
+              <div key={ri} style={{ ...styles.matrixRow, background: ri % 2 === 0 ? "rgba(255,255,255,0.02)" : "transparent" }}>
+                <div style={styles.matrixRowLabel}>{row.text}</div>
+                {q.columns.map(col => (
+                  <div key={col} style={styles.matrixCellWrap} onClick={() => handleMatrixSelect(ri, col)}>
+                    <div style={getMatrixCellStyle(ri, col)}>
+                      {matrixAnswers[`${currentQ}-${ri}`] === col && (
+                        <span style={{ fontSize: 16 }}>
+                          {submitted[currentQ] ? (row.correctAnswer === col ? "✓" : "✗") : "●"}
+                        </span>
+                      )}
+                      {submitted[currentQ] && row.correctAnswer === col && matrixAnswers[`${currentQ}-${ri}`] !== col && (
+                        <span style={{ fontSize: 12, opacity: 0.6 }}>✓</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Submit / Rationale */}
+        {!submitted[currentQ] && (
+          <button style={{ ...styles.submitBtn, opacity: canSubmit() ? 1 : 0.4, cursor: canSubmit() ? "pointer" : "not-allowed" }} onClick={submitAnswer} disabled={!canSubmit()}>
+            Submit Answer
+          </button>
+        )}
+
+        {showRationale[currentQ] && (
+          <div style={styles.rationale}>
+            <div style={styles.rationaleHeader}>
+              <span style={{ fontSize: 18 }}>📋</span>
+              <span style={{ fontWeight: 700, letterSpacing: 1 }}>RATIONALE</span>
+            </div>
+            <p style={styles.rationaleText}>{q.rationale}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Navigation */}
+      <div style={styles.navBar}>
+        <button style={{ ...styles.navBtn, opacity: currentQ > 0 ? 1 : 0.3 }} onClick={() => currentQ > 0 && setCurrentQ(currentQ - 1)} disabled={currentQ === 0}>
+          ← Previous
+        </button>
+        <div style={styles.qDots}>
+          {questions.map((_, i) => (
+            <button key={i} onClick={() => setCurrentQ(i)} style={{
+              width: 10, height: 10, borderRadius: "50%", border: "none", cursor: "pointer",
+              background: i === currentQ ? "#8b5cf6" : submitted[i] ? (
+                (() => {
+                  const qq = questions[i];
+                  let c = false;
+                  if (qq.type === "case_mc") c = qq.options[answers[i]]?.correct;
+                  else if (qq.type === "sata") {
+                    const sel = answers[i] || [];
+                    const ci = qq.options.map((o, j) => o.correct ? j : -1).filter(j => j !== -1);
+                    c = sel.length === ci.length && ci.every(j => sel.includes(j));
+                  } else if (qq.type === "matrix") {
+                    c = qq.rows.every((row, ri) => matrixAnswers[`${i}-${ri}`] === row.correctAnswer);
+                  }
+                  return c ? "#00c853" : "#ff4d6d";
+                })()
+              ) : "rgba(255,255,255,0.15)",
+              transition: "all 0.2s",
+              transform: i === currentQ ? "scale(1.4)" : "scale(1)",
+            }} title={`Q${i + 1}`} />
+          ))}
+        </div>
+        {currentQ < questions.length - 1 ? (
+          <button style={styles.navBtn} onClick={() => setCurrentQ(currentQ + 1)}>
+            Next →
+          </button>
+        ) : (
+          <button style={{ ...styles.navBtn, background: "linear-gradient(135deg, #00c853, #00a844)", color: "#fff" }} onClick={finishExam}>
+            Finish Exam
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const globalCSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+  
+  @keyframes heartPulse {
+    0%, 100% { transform: scale(1); }
+    15% { transform: scale(1.15); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.1); }
+  }
+
+  @keyframes ekgPulse {
+    0% { opacity: 0.3; }
+    50% { opacity: 1; }
+    100% { opacity: 0.3; }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  * { box-sizing: border-box; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+  ::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.4); border-radius: 3px; }
+`;
+
+const styles = {
+  container: {
+    minHeight: "100vh",
+    background: "linear-gradient(160deg, #0a0a1a 0%, #0f0f2e 40%, #1a0a2e 70%, #0a0a1a 100%)",
+    color: "#e8e0f0",
+    fontFamily: "'DM Sans', sans-serif",
+    padding: "0 0 100px 0",
+    position: "relative",
+  },
+  // Start Screen
+  startCard: {
+    maxWidth: 680,
+    margin: "0 auto",
+    padding: "48px 32px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    animation: "fadeIn 0.6s ease-out",
+  },
+  heartbeatIcon: {
+    marginBottom: 8,
+    filter: "drop-shadow(0 0 20px rgba(255,77,109,0.4))",
+  },
+  title: {
+    fontFamily: "'Space Mono', monospace",
+    fontSize: 34,
+    fontWeight: 700,
+    letterSpacing: 4,
+    background: "linear-gradient(135deg, #ff4d6d, #c9184a, #8b5cf6)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    margin: "12px 0 4px",
+    textAlign: "center",
+  },
+  subtitle: {
+    fontFamily: "'Space Mono', monospace",
+    fontSize: 15,
+    fontWeight: 400,
+    color: "rgba(232,224,240,0.5)",
+    letterSpacing: 6,
+    textTransform: "uppercase",
+    margin: "0 0 28px",
+  },
+  examInfo: {
+    display: "flex",
+    alignItems: "center",
+    gap: 20,
+    padding: "16px 28px",
+    background: "rgba(255,255,255,0.03)",
+    borderRadius: 12,
+    border: "1px solid rgba(255,255,255,0.06)",
+    marginBottom: 28,
+    flexWrap: "wrap",
+    justifyContent: "center",
+  },
+  infoItem: { display: "flex", flexDirection: "column", alignItems: "center", gap: 4 },
+  infoLabel: { fontSize: 10, textTransform: "uppercase", letterSpacing: 2, color: "rgba(232,224,240,0.4)" },
+  infoValue: { fontSize: 15, fontWeight: 600, color: "#c4b5fd" },
+  infoDivider: { width: 1, height: 32, background: "rgba(255,255,255,0.08)" },
+  topicList: { width: "100%", marginBottom: 28 },
+  topicHeader: { fontSize: 11, textTransform: "uppercase", letterSpacing: 3, color: "rgba(232,224,240,0.4)", margin: "0 0 12px", textAlign: "center" },
+  topicGrid: { display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" },
+  topicTag: {
+    padding: "6px 14px",
+    fontSize: 12,
+    background: "rgba(139,92,246,0.1)",
+    border: "1px solid rgba(139,92,246,0.2)",
+    borderRadius: 20,
+    color: "#c4b5fd",
+    fontWeight: 500,
+  },
+  startBtn: {
+    padding: "14px 40px",
+    fontSize: 16,
+    fontWeight: 700,
+    fontFamily: "'DM Sans', sans-serif",
+    color: "#fff",
+    background: "linear-gradient(135deg, #c9184a, #8b5cf6)",
+    border: "none",
+    borderRadius: 10,
+    cursor: "pointer",
+    letterSpacing: 1,
+    transition: "transform 0.2s, box-shadow 0.2s",
+    boxShadow: "0 4px 20px rgba(201,24,74,0.3)",
+    marginBottom: 16,
+  },
+  // Exam screen
+  topBar: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "16px 20px 12px",
+    borderBottom: "1px solid rgba(255,255,255,0.06)",
+    position: "sticky",
+    top: 0,
+    background: "rgba(10,10,26,0.95)",
+    backdropFilter: "blur(12px)",
+    zIndex: 100,
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  topBarLeft: { display: "flex", alignItems: "center", gap: 12 },
+  topBarRight: { display: "flex", alignItems: "center", gap: 16 },
+  qCount: { fontFamily: "'Space Mono', monospace", fontSize: 18, fontWeight: 700, color: "#fff" },
+  catBadge: {
+    padding: "4px 12px",
+    fontSize: 11,
+    background: "rgba(139,92,246,0.15)",
+    border: "1px solid rgba(139,92,246,0.3)",
+    borderRadius: 16,
+    color: "#c4b5fd",
+    fontWeight: 600,
+    letterSpacing: 0.5,
+  },
+  timer: { fontFamily: "'Space Mono', monospace", fontSize: 14, color: "rgba(232,224,240,0.5)" },
+  scoreSmall: { fontSize: 13, color: "#00c853", fontWeight: 600 },
+  progressOuter: { height: 3, background: "rgba(255,255,255,0.05)", position: "sticky", top: 58, zIndex: 99 },
+  progressInner: { height: "100%", background: "linear-gradient(90deg, #c9184a, #8b5cf6)", transition: "width 0.4s ease", borderRadius: 2 },
+  questionCard: {
+    maxWidth: 800,
+    margin: "24px auto",
+    padding: "28px 24px",
+    animation: "fadeIn 0.4s ease-out",
+  },
+  qTypeBadge: {
+    display: "inline-block",
+    padding: "3px 10px",
+    fontSize: 10,
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: 2,
+    background: "rgba(255,77,109,0.12)",
+    color: "#ff4d6d",
+    borderRadius: 6,
+    marginBottom: 16,
+  },
+  stemText: {
+    fontSize: 16,
+    lineHeight: 1.7,
+    color: "#e8e0f0",
+    marginBottom: 24,
+    fontWeight: 500,
+  },
+  optionsContainer: { display: "flex", flexDirection: "column", gap: 10 },
+  optionBtn: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 14,
+    padding: "14px 18px",
+    borderRadius: 10,
+    cursor: "pointer",
+    transition: "all 0.2s",
+    textAlign: "left",
+    position: "relative",
+    width: "100%",
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: 14,
+  },
+  optLetter: {
+    fontFamily: "'Space Mono', monospace",
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#8b5cf6",
+    minWidth: 22,
+    flexShrink: 0,
+    marginTop: 1,
+  },
+  optText: { flex: 1, lineHeight: 1.6, color: "#d4cce0" },
+  correctMark: { color: "#00c853", fontWeight: 700, fontSize: 18, marginLeft: 8, flexShrink: 0 },
+  incorrectMark: { color: "#ff4d6d", fontWeight: 700, fontSize: 18, marginLeft: 8, flexShrink: 0 },
+  checkbox: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    border: "2px solid rgba(139,92,246,0.4)",
+    fontSize: 12,
+    fontWeight: 700,
+    color: "#8b5cf6",
+    transition: "all 0.2s",
+  },
+  checkboxChecked: {
+    background: "rgba(139,92,246,0.2)",
+    borderColor: "#8b5cf6",
+  },
+  // Matrix
+  matrixContainer: {
+    overflowX: "auto",
+    border: "1px solid rgba(255,255,255,0.06)",
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  matrixHeader: {
+    display: "flex",
+    borderBottom: "1px solid rgba(255,255,255,0.08)",
+    background: "rgba(139,92,246,0.06)",
+  },
+  matrixRow: {
+    display: "flex",
+    borderBottom: "1px solid rgba(255,255,255,0.04)",
+    minHeight: 52,
+  },
+  matrixRowLabel: {
+    flex: 2,
+    padding: "10px 14px",
+    fontSize: 13,
+    lineHeight: 1.5,
+    display: "flex",
+    alignItems: "center",
+    minWidth: 200,
+  },
+  matrixColHeader: {
+    flex: 1,
+    padding: "10px 6px",
+    fontSize: 11,
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    color: "#c4b5fd",
+    textAlign: "center",
+    minWidth: 80,
+  },
+  matrixCellWrap: {
+    flex: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "6px",
+    minWidth: 80,
+  },
+  matrixCell: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "all 0.2s",
+    color: "#c4b5fd",
+    fontWeight: 700,
+  },
+  // Submit & Rationale
+  submitBtn: {
+    display: "block",
+    margin: "24px auto 0",
+    padding: "12px 36px",
+    fontSize: 15,
+    fontWeight: 700,
+    fontFamily: "'DM Sans', sans-serif",
+    color: "#fff",
+    background: "linear-gradient(135deg, #8b5cf6, #6d28d9)",
+    border: "none",
+    borderRadius: 10,
+    letterSpacing: 0.5,
+    transition: "all 0.2s",
+    boxShadow: "0 4px 16px rgba(139,92,246,0.3)",
+  },
+  rationale: {
+    marginTop: 24,
+    padding: "20px",
+    background: "rgba(139,92,246,0.06)",
+    border: "1px solid rgba(139,92,246,0.15)",
+    borderRadius: 12,
+    animation: "fadeIn 0.4s ease-out",
+  },
+  rationaleHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+    color: "#c4b5fd",
+    fontSize: 12,
+    textTransform: "uppercase",
+    letterSpacing: 2,
+  },
+  rationaleText: { fontSize: 14, lineHeight: 1.8, color: "rgba(232,224,240,0.85)" },
+  // Navigation
+  navBar: {
+    position: "fixed",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "12px 20px",
+    background: "rgba(10,10,26,0.95)",
+    backdropFilter: "blur(12px)",
+    borderTop: "1px solid rgba(255,255,255,0.06)",
+    zIndex: 100,
+    gap: 12,
+  },
+  navBtn: {
+    padding: "10px 20px",
+    fontSize: 13,
+    fontWeight: 600,
+    fontFamily: "'DM Sans', sans-serif",
+    color: "#c4b5fd",
+    background: "rgba(139,92,246,0.1)",
+    border: "1px solid rgba(139,92,246,0.2)",
+    borderRadius: 8,
+    cursor: "pointer",
+    transition: "all 0.2s",
+    whiteSpace: "nowrap",
+  },
+  qDots: {
+    display: "flex",
+    gap: 4,
+    flexWrap: "wrap",
+    justifyContent: "center",
+    flex: 1,
+    maxWidth: 500,
+    overflow: "hidden",
+  },
+  // Results
+  resultsCard: {
+    maxWidth: 700,
+    margin: "0 auto",
+    padding: "32px 24px",
+    animation: "fadeIn 0.6s ease-out",
+    textAlign: "center",
+  },
+  scoreCircle: {
+    width: 140,
+    height: 140,
+    borderRadius: "50%",
+    border: "4px solid",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    margin: "24px auto",
+    background: "rgba(0,0,0,0.3)",
+  },
+  scorePct: { fontSize: 36, fontFamily: "'Space Mono', monospace", fontWeight: 700 },
+  scoreLabel: { fontSize: 14, color: "rgba(232,224,240,0.5)", marginTop: 2 },
+  passLabel: {
+    display: "inline-block",
+    padding: "8px 20px",
+    borderRadius: 8,
+    fontSize: 14,
+    fontWeight: 700,
+    letterSpacing: 1,
+    marginBottom: 8,
+  },
+  timeResult: { fontSize: 14, color: "rgba(232,224,240,0.4)", fontFamily: "'Space Mono', monospace" },
+  catBreakdown: {
+    textAlign: "left",
+    marginTop: 28,
+    padding: "20px",
+    background: "rgba(255,255,255,0.02)",
+    borderRadius: 12,
+    border: "1px solid rgba(255,255,255,0.06)",
+  },
+  catRow: { display: "flex", alignItems: "center", gap: 12, marginBottom: 10, flexWrap: "wrap" },
+  catName: { fontSize: 12, color: "rgba(232,224,240,0.7)", minWidth: 160, flex: "0 0 160px" },
+  catBarOuter: { flex: 1, height: 8, background: "rgba(255,255,255,0.06)", borderRadius: 4, minWidth: 100 },
+  catBarInner: { height: "100%", borderRadius: 4, transition: "width 0.6s ease" },
+  catPct: { fontSize: 12, fontFamily: "'Space Mono', monospace", color: "rgba(232,224,240,0.5)", minWidth: 36, textAlign: "right" },
+};
+
+
+ReactDOM.createRoot(document.getElementById('root')).render(<PerfusionExam />);
+</script>
+</body>
+</html>
